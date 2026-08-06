@@ -2,674 +2,955 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Newsr · Editorial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Newsr · Editorial Desk</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{background:#0a0a0f;color:#e8e8e8;font-family:'DM Sans',sans-serif;min-height:100vh;
-       overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0f;color:#e8e8e8;font-family:'DM Sans',sans-serif;min-height:100vh}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
 
-  /* ── Layout ── */
-  .app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
-  .header{background:#101014;border-bottom:0.5px solid #1e1e2a;padding:12px 16px;
-          padding-top:max(12px, env(safe-area-inset-top));flex-shrink:0;
-          display:flex;align-items:center;gap:12px}
-  .brand{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:#f0f0f0;flex:1}
+  /* Header */
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:10px}
+  .brand{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#f0f0f0}
   .brand span{color:#e8c547}
-  .conn-dot{width:8px;height:8px;border-radius:50%;background:#e8a84d;flex-shrink:0}
-  .conn-dot.live{background:#4de88e}
-  .conn-dot.err{background:#e85d5d}
-  .hbtn{width:38px;height:38px;border-radius:10px;background:#141418;border:0.5px solid #2a2a35;
-        display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px}
-  .hbtn:active{background:#1e1e2a}
+  .brand small{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#666;letter-spacing:0.5px;margin-left:8px}
+  .conn{display:flex;align-items:center;gap:7px;font-size:12px}
+  .conn .dot{width:8px;height:8px;border-radius:50%;background:#e8a84d}
+  .conn.live .dot{background:#4de88e}
+  .conn.demo .dot{background:#e8a84d}
+  .conn.err .dot{background:#e85d5d}
 
-  /* ── Screen transitions ── */
-  .screen{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-          position:absolute;inset:0;top:var(--header-h,60px);
-          transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);will-change:transform}
-  .screen.hidden{transform:translateX(100%);pointer-events:none}
-  .screen.list-screen{transform:translateX(0)}
-  .screen.detail-screen{background:#0a0a0f}
+  /* Settings */
+  .settings{background:#141418;border:0.5px solid #2a2a35;border-radius:12px;padding:14px;margin:14px 0;display:none}
+  .settings.open{display:block}
+  .settings h3{font-size:11px;font-weight:600;letter-spacing:1px;color:#666;text-transform:uppercase;margin-bottom:12px}
+  .field{margin-bottom:11px}
+  .field label{display:block;font-size:11px;color:#888;margin-bottom:5px}
+  .field input{width:100%;background:#0a0a0f;border:0.5px solid #2a2a35;border-radius:8px;padding:9px 11px;color:#e8e8e8;font-family:'DM Sans',sans-serif;font-size:13px}
+  .field input:focus{outline:none;border-color:#e8c547}
+  .field .hint{font-size:10px;color:#555;margin-top:4px}
+  .btn{border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .btn-primary{background:#e8c547;color:#0a0a0f}
+  .btn-ghost{background:#1e1e2a;color:#aaa}
+  .settings-row{display:flex;gap:8px;margin-top:6px}
 
-  /* ── Stats ── */
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 14px 0}
-  .stat{background:#141418;border:0.5px solid #2a2a35;border-radius:12px;padding:11px 14px;
-        display:flex;align-items:center;justify-content:space-between}
-  .stat.clickable{cursor:pointer}
-  .stat.clickable:active{background:#1e1e2a}
-  .stat-v{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;line-height:1}
-  .stat-l{font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px}
-  .stat-arr{font-size:14px;color:#444}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+  .iconbtn{background:#141418;border:0.5px solid #2a2a35;border-radius:8px;padding:8px 12px;color:#aaa;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .iconbtn:hover{border-color:#3a3a45}
+  .iconbtn-approve{color:#4de88e;border-color:rgba(77,232,142,0.3);background:rgba(77,232,142,0.07)}
+  .iconbtn-approve:hover{border-color:#4de88e;background:rgba(77,232,142,0.12)}
+  .iconbtn-approve:disabled{opacity:0.35;cursor:default;pointer-events:none}
+  .iconbtn-flush{color:#e87d4d;border-color:rgba(232,125,77,0.3);background:rgba(232,125,77,0.07)}
+  .iconbtn-flush:hover{border-color:#e87d4d;background:rgba(232,125,77,0.12)}
 
-  /* ── Approve all ── */
-  .approve-all-wrap{padding:12px 14px}
-  .approve-all{width:100%;background:rgba(77,232,142,0.12);border:0.5px solid rgba(77,232,142,0.35);
-               border-radius:12px;padding:14px;font-size:14px;font-weight:700;color:#4de88e;
-               font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;
-               justify-content:center;gap:7px}
-  .approve-all:active{background:rgba(77,232,142,0.2)}
-  .approve-all:disabled{opacity:0.4;pointer-events:none}
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+  .stat{background:#141418;border:0.5px solid #2a2a35;border-radius:12px;padding:11px 13px}
+  .stat-click{cursor:pointer;transition:border-color 0.15s,transform 0.1s}
+  .stat-click:hover{border-color:#3a3a45}
+  .stat-click:active{transform:scale(0.98)}
+  .stat-hint{opacity:0.4;font-size:8px}
+  .stat .v{font-family:'Playfair Display',serif;font-size:21px;font-weight:900;line-height:1}
+  .stat .l{font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
 
-  /* ── Queue list ── */
-  .section-label{font-size:9px;font-weight:600;letter-spacing:1.5px;color:#555;
-                 text-transform:uppercase;padding:6px 14px 10px}
-  .story-item{padding:14px;border-bottom:0.5px solid #141418;cursor:pointer;
-              display:flex;align-items:flex-start;gap:11px;background:#0a0a0f;
-              transition:background 0.15s;min-height:64px}
-  .story-item:active{background:#141418}
-  .story-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
-  .story-dot.pending{background:#e8a84d}
-  .story-dot.editing{background:#e8c547}
-  .story-dot.approved{background:#4de88e}
-  .story-dot.rejected{background:#e85d5d}
-  .story-info{flex:1;min-width:0}
-  .story-head{font-size:14px;font-weight:600;color:#dcdcdc;line-height:1.4;
-              display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .story-meta{font-size:11px;color:#666;margin-top:5px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-  .top-pill{font-size:9px;font-weight:700;color:#e85d5d;background:rgba(232,93,93,0.12);
-            border:0.5px solid rgba(232,93,93,0.3);padding:2px 7px;border-radius:8px}
-  .story-arr{font-size:18px;color:#333;flex-shrink:0;align-self:center}
-  .empty-q{text-align:center;padding:60px 20px}
-  .empty-q .e-icon{font-size:42px;margin-bottom:14px}
-  .empty-q .e-title{font-family:'Playfair Display',serif;font-size:18px;color:#888;margin-bottom:6px}
-  .empty-q .e-sub{font-size:12px;color:#555}
+  .banner{background:rgba(232,168,77,0.1);border:0.5px solid rgba(232,168,77,0.25);border-radius:10px;padding:11px 14px;font-size:12px;color:#e8a84d;margin-bottom:14px;line-height:1.5}
 
-  /* ── Detail screen ── */
-  .detail-header{display:flex;align-items:center;gap:11px;padding:13px 14px;
-                 border-bottom:0.5px solid #1e1e2a;background:#101014}
-  .back-btn{width:36px;height:36px;border-radius:9px;background:#141418;border:0.5px solid #2a2a35;
-            display:flex;align-items:center;justify-content:center;cursor:pointer;
-            font-size:18px;color:#aaa;flex-shrink:0}
-  .back-btn:active{background:#1e1e2a}
-  .detail-title{flex:1;font-size:13px;font-weight:600;color:#dcdcdc;
-                white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .top-toggle{padding:6px 11px;border-radius:9px;font-size:11px;font-weight:600;
-              border:0.5px solid #2a2a35;background:#141418;color:#888;cursor:pointer;
-              font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0}
-  .top-toggle:active{background:#1e1e2a}
-  .top-toggle.active{background:rgba(232,93,93,0.12);border-color:rgba(232,93,93,0.4);color:#e85d5d}
+  /* ── Two-pane workspace ── */
+  .workspace{display:flex;gap:14px;align-items:flex-start}
 
-  /* ── Detail fields ── */
-  .detail-body{padding:14px;display:flex;flex-direction:column;gap:14px}
-  .status-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .status-pill{font-size:9px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;
-               padding:4px 10px;border-radius:10px}
-  .status-pill.pending{background:rgba(232,168,77,0.15);color:#e8a84d}
-  .status-pill.editing{background:rgba(232,197,71,0.15);color:#e8c547}
-  .status-pill.approved{background:rgba(77,232,142,0.15);color:#4de88e}
-  .status-pill.rejected{background:rgba(232,93,93,0.15);color:#e85d5d}
+  .list-pane{width:320px;flex-shrink:0;background:#101014;border:0.5px solid #2a2a35;border-radius:14px;padding:12px;max-height:680px;overflow-y:auto}
+  .list-header{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:600;letter-spacing:1.2px;color:#555;text-transform:uppercase;padding:4px 6px 10px}
+  .list-count{background:#1e1e2a;color:#999;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
 
-  .dfield{display:flex;flex-direction:column;gap:6px}
-  .dfield label{font-size:9px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.5px}
-  .dfield input,.dfield textarea,.dfield select{
-    background:#141418;border:0.5px solid #2a2a35;border-radius:10px;
-    padding:12px;color:#e8e8e8;font-family:'DM Sans',sans-serif;font-size:14px;
-    line-height:1.5;width:100%;appearance:none;-webkit-appearance:none}
+  .story-row{padding:11px 12px;border-radius:10px;cursor:pointer;margin-bottom:5px;border:0.5px solid transparent;transition:opacity 0.4s ease,background 0.15s,border-color 0.15s}
+  .story-row:hover{background:#1a1a22}
+  .story-row.selected{background:rgba(232,197,71,0.08);border-color:rgba(232,197,71,0.35)}
+  .story-row.resolved{opacity:0.4}
+  .story-row.fading{opacity:0.15}
+  .row-top{display:flex;align-items:flex-start;gap:8px}
+  .row-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .row-dot.pending{background:#e8a84d}
+  .row-dot.editing{background:#e8c547}
+  .row-dot.approved{background:#4de88e}
+  .row-dot.rejected{background:#e85d5d}
+  .row-headline{font-size:12.5px;font-weight:600;color:#dcdcdc;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .row-meta{font-size:10px;color:#5a5a66;margin-top:5px;margin-left:15px;display:flex;align-items:center;gap:6px}
+  .row-resolved-tag{font-size:9px;font-weight:600;letter-spacing:0.4px}
+  .row-resolved-tag.approved{color:#4de88e}
+  .row-resolved-tag.rejected{color:#e85d5d}
+  .top-badge{font-size:9px;font-weight:700;color:#e85d5d;background:rgba(232,93,93,0.12);border:0.5px solid rgba(232,93,93,0.3);padding:2px 7px;border-radius:9px;letter-spacing:0.4px}
+  .list-empty{text-align:center;padding:50px 16px;color:#555;font-size:12px}
+
+  /* ── Detail pane ── */
+  .detail-pane{flex:1;min-width:0;background:#101014;border:0.5px solid #2a2a35;border-radius:14px;padding:20px 22px;min-height:680px}
+  .detail-empty{text-align:center;padding:120px 20px;color:#555}
+  .detail-empty .big{font-size:36px;margin-bottom:14px}
+  .detail-empty .t{font-family:'Playfair Display',serif;font-size:17px;color:#888;margin-bottom:6px}
+
+  .detail-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .top-toggle-btn{background:#1e1e2a;border:0.5px solid #2a2a35;border-radius:9px;padding:5px 12px;font-size:11px;font-weight:600;color:#888;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+  .top-toggle-btn:hover{border-color:#e85d5d;color:#e85d5d}
+  .top-toggle-btn.is-top{background:rgba(232,93,93,0.12);border-color:rgba(232,93,93,0.4);color:#e85d5d}
+  .detail-status{font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;padding:4px 10px;border-radius:11px}
+  .detail-status.pending{background:rgba(232,168,77,0.15);color:#e8a84d}
+  .detail-status.editing{background:rgba(232,197,71,0.15);color:#e8c547}
+  .detail-status.approved{background:rgba(77,232,142,0.15);color:#4de88e}
+  .detail-status.rejected{background:rgba(232,93,93,0.15);color:#e85d5d}
+
+  .dfield{margin-bottom:16px}
+  .dfield label{display:block;font-size:10px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px}
+  .dfield input,.dfield textarea,.dfield select{width:100%;background:#0a0a0f;border:0.5px solid #2a2a35;border-radius:9px;padding:10px 12px;color:#e8e8e8;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.6}
   .dfield input:focus,.dfield textarea:focus,.dfield select:focus{outline:none;border-color:#e8c547}
-  .dfield .headline-input{font-family:'Playfair Display',serif;font-size:16px;font-weight:700}
-  .dfield textarea{min-height:160px;resize:none}
-  .dfield-hint{font-size:10px;color:#555;line-height:1.5;margin-top:2px}
+  .dfield textarea{min-height:200px;resize:vertical;white-space:pre-wrap}
+  .dfield-headline input{font-family:'Playfair Display',serif;font-size:17px;font-weight:700}
 
-  /* ── Chips ── */
-  .chip-row{display:flex;flex-wrap:wrap;gap:7px}
-  .chip{display:inline-flex;align-items:center;gap:6px;background:#141418;color:#aaa;
-        font-size:11px;padding:6px 8px 6px 12px;border-radius:13px;border:0.5px solid #2a2a35}
-  .chip button{background:none;border:none;color:#666;font-size:15px;line-height:1;
-               cursor:pointer;padding:0 2px;min-width:20px;min-height:20px}
-  .chip button:active{color:#e85d5d}
-  .add-topic{background:#141418;border:0.5px dashed #3a3a45;border-radius:12px;
-             padding:10px;font-size:13px;color:#777;width:100%;
-             font-family:'DM Sans',sans-serif;appearance:none;-webkit-appearance:none}
-  .custom-row{display:flex;gap:8px;margin-top:7px}
-  .custom-row input{flex:1;background:#141418;border:0.5px dashed #3a3a45;border-radius:10px;
-                    padding:11px;font-size:13px;color:#e8e8e8;font-family:'DM Sans',sans-serif}
-  .custom-row input:focus{outline:none;border-style:solid;border-color:#e8c547}
-  .custom-row button{background:#1e1e2a;border:0.5px solid #2a2a35;border-radius:10px;
-                     padding:11px 14px;color:#aaa;font-size:12px;font-weight:600;
-                     cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
-  .custom-row button:active{border-color:#e8c547;color:#e8c547}
-
-  /* ── Source rows ── */
-  .source-item{font-size:13px;color:#888;padding:10px 0;border-bottom:0.5px solid #1e1e2a;
-               display:flex;align-items:center;gap:9px}
-  .source-item:last-child{border-bottom:none}
-
-  /* ── Action bar ── */
-  .action-bar{position:sticky;bottom:0;background:#0a0a0f;border-top:0.5px solid #1e1e2a;
-              padding:12px 14px;padding-bottom:max(12px,env(safe-area-inset-bottom));
-              display:flex;gap:9px}
-  .action-btn{flex:1;border-radius:12px;padding:14px;font-size:13px;font-weight:700;
-              cursor:pointer;border:0.5px solid;background:transparent;
-              font-family:'DM Sans',sans-serif;text-align:center}
-  .action-btn:active{opacity:0.7}
-  .btn-approve{color:#4de88e;border-color:rgba(77,232,142,0.4);background:rgba(77,232,142,0.1)}
-  .btn-save{color:#e8c547;border-color:rgba(232,197,71,0.4);background:rgba(232,197,71,0.08)}
-  .btn-reject{color:#e85d5d;border-color:rgba(232,93,93,0.35);background:rgba(232,93,93,0.07)}
-  .btn-unpublish{color:#e87d4d;border-color:rgba(232,125,77,0.35);background:rgba(232,125,77,0.07)}
-
-  /* ── Settings modal ── */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;
-                 display:none;align-items:flex-end}
-  .modal-overlay.open{display:flex}
-  .modal{background:#101014;border-radius:22px 22px 0 0;width:100%;padding:16px 16px 32px;
-         border-top:0.5px solid #2a2a35;max-height:80dvh;overflow-y:auto}
-  .modal-handle{width:38px;height:4px;background:#333;border-radius:2px;margin:0 auto 18px}
-  .modal h3{font-size:10px;font-weight:600;letter-spacing:1px;color:#666;
-            text-transform:uppercase;margin-bottom:12px}
-  .mfield{margin-bottom:12px}
-  .mfield label{display:block;font-size:11px;color:#888;margin-bottom:5px}
-  .mfield input{width:100%;background:#0a0a0f;border:0.5px solid #2a2a35;border-radius:9px;
-                padding:12px;color:#e8e8e8;font-family:'DM Sans',sans-serif;font-size:14px}
-  .mfield input:focus{outline:none;border-color:#e8c547}
-  .mfield .hint{font-size:10px;color:#555;margin-top:4px}
-  .mbtn-row{display:flex;gap:8px;margin-top:14px}
-  .mbtn{flex:1;border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:600;
-        cursor:pointer;font-family:'DM Sans',sans-serif}
-  .mbtn-primary{background:#e8c547;color:#0a0a0f}
-  .mbtn-ghost{background:#1e1e2a;color:#aaa}
+  .topic-row{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .topic-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(120,120,130,0.12);color:#aaa;font-size:11px;padding:5px 7px 5px 11px;border-radius:13px}
+  .topic-chip button{background:none;border:none;color:#777;cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
+  .topic-chip button:hover{color:#e85d5d}
+  .add-topic-select{background:#0a0a0f;border:0.5px dashed #3a3a45;border-radius:13px;padding:5px 10px;font-size:11px;color:#888;max-width:160px}
+  .dhint{font-size:10.5px;color:#555;margin-top:7px;line-height:1.5}
+  .custom-topic-row{display:flex;gap:6px;margin-top:9px}
+  .custom-topic-row input{flex:1;background:#0a0a0f;border:0.5px dashed #3a3a45;border-radius:9px;padding:7px 11px;color:#e8e8e8;font-family:'DM Sans',sans-serif;font-size:11.5px}
+  .custom-topic-row input:focus{outline:none;border-color:#e8c547;border-style:solid}
+  .custom-topic-row button{background:#1e1e2a;border:0.5px solid #2a2a35;border-radius:9px;padding:7px 13px;color:#aaa;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .custom-topic-row button:hover{border-color:#e8c547;color:#e8c547}
 
   /* ── Archive modal ── */
-  .archive-modal{background:#101014;border-radius:22px 22px 0 0;width:100%;
-                 padding:16px 16px 32px;border-top:0.5px solid #2a2a35;max-height:85dvh;
-                 overflow-y:auto;display:flex;flex-direction:column;gap:0}
-  .archive-head{display:flex;align-items:center;gap:11px;margin-bottom:14px}
-  .archive-title{flex:1;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:#f0f0f0}
-  .archive-row{padding:13px 0;border-bottom:0.5px solid #1a1a22;cursor:pointer}
-  .archive-row:active{opacity:0.7}
+  .archive-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .archive-overlay.open{display:flex}
+  .archive-modal{background:#101014;border:0.5px solid #2a2a35;border-radius:16px;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+  .archive-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:0.5px solid #1e1e2a}
+  .archive-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#f0f0f0}
+  .archive-close{background:#1e1e2a;border:none;border-radius:7px;width:28px;height:28px;color:#888;font-size:15px;cursor:pointer}
+  .archive-close:hover{color:#e8e8e8}
+  .archive-body{overflow-y:auto;padding:8px 14px;flex:1}
+  .archive-row{padding:11px 6px;border-bottom:0.5px solid #1a1a22}
   .archive-row:last-child{border-bottom:none}
-  .archive-hl{font-size:13px;font-weight:600;color:#dcdcdc;line-height:1.4;margin-bottom:6px}
-  .archive-meta{display:flex;flex-wrap:wrap;gap:7px;font-size:10.5px;color:#666;align-items:center}
-  .archive-badge{font-size:9px;font-weight:600;padding:2px 7px;border-radius:8px}
-  .archive-badge.live{background:rgba(77,232,142,0.12);color:#4de88e}
-  .archive-badge.exp{background:rgba(120,120,130,0.12);color:#888}
-  .load-more{width:100%;background:#141418;border:0.5px solid #2a2a35;border-radius:10px;
-             padding:12px;color:#888;font-size:12px;font-weight:600;cursor:pointer;
-             font-family:'DM Sans',sans-serif;margin-top:14px}
-  .load-more:disabled{opacity:0.4;pointer-events:none}
+  .archive-headline{font-size:13px;font-weight:600;color:#dcdcdc;line-height:1.4;margin-bottom:5px}
+  .archive-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:10.5px;color:#666;align-items:center}
+  .archive-pill{font-size:9px;font-weight:600;padding:2px 8px;border-radius:9px;background:rgba(77,232,142,0.12);color:#4de88e}
+  .archive-pill.expired{background:rgba(120,120,130,0.12);color:#888}
+  .archive-empty{text-align:center;padding:50px 20px;color:#555;font-size:12.5px}
+  .archive-foot{padding:13px 18px;border-top:0.5px solid #1e1e2a;text-align:center}
+  .archive-loadmore{background:#1e1e2a;border:0.5px solid #2a2a35;border-radius:8px;padding:9px 18px;color:#aaa;font-size:12px;font-weight:600;cursor:pointer}
+  .archive-loadmore:hover{border-color:#e8c547;color:#e8c547}
+  .archive-loadmore:disabled{opacity:0.4;cursor:default}
 
-  /* ── Toast ── */
-  .toast{position:fixed;bottom:env(safe-area-inset-bottom,20px);bottom:max(84px,calc(env(safe-area-inset-bottom)+20px));
-         left:50%;transform:translateX(-50%) translateY(80px);background:#1e1e2a;
-         border:0.5px solid #2a2a35;color:#e8e8e8;padding:11px 18px;border-radius:12px;
-         font-size:13px;transition:transform 0.3s;z-index:200;white-space:nowrap;
-         max-width:calc(100vw - 32px);text-align:center}
+  .sources-list{display:flex;flex-direction:column;gap:6px}
+  .source-row{display:flex;align-items:center;gap:9px;font-size:12px;color:#999;padding:7px 0;border-bottom:0.5px solid #1a1a22}
+  .source-row:last-child{border-bottom:none}
+
+  .detail-actions{display:flex;gap:9px;margin-top:6px}
+  .dbtn{flex:1;border-radius:9px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;border:0.5px solid;background:transparent;font-family:'DM Sans',sans-serif}
+  .dbtn-approve{color:#4de88e;border-color:rgba(77,232,142,0.35);background:rgba(77,232,142,0.08)}
+  .dbtn-save{color:#e8c547;border-color:rgba(232,197,71,0.35);background:rgba(232,197,71,0.07)}
+  .dbtn-reject{color:#e85d5d;border-color:rgba(232,93,93,0.3);background:rgba(232,93,93,0.06)}
+  .resolved-note{text-align:center;font-size:12.5px;font-weight:600;padding:14px;border-radius:10px;margin-top:10px}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1e2a;border:0.5px solid #2a2a35;color:#e8e8e8;padding:11px 18px;border-radius:10px;font-size:13px;transition:transform 0.3s;z-index:100}
   .toast.show{transform:translateX(-50%) translateY(0)}
-  .banner{background:rgba(232,168,77,0.1);border:0.5px solid rgba(232,168,77,0.25);
-          border-radius:10px;padding:11px 14px;font-size:12px;color:#e8a84d;
-          line-height:1.5;margin:14px 14px 0}
+
+  @media(max-width:880px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .workspace{flex-direction:column}
+    .list-pane{width:100%;max-height:260px}
+    .detail-pane{min-height:auto}
+  }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="wrap">
 
-  <!-- Header -->
-  <div class="header" id="main-header">
-    <div class="brand" id="brand-text">news<span>r</span></div>
-    <div class="conn-dot" id="conn-dot"></div>
-    <div class="hbtn" onclick="openSettings()">⚙</div>
-    <div class="hbtn" id="refresh-btn" onclick="loadQueue()" style="display:none">↻</div>
-    <div class="hbtn" id="flush-btn" onclick="flushFeed()" style="display:none;color:#e87d4d;border-color:rgba(232,125,77,0.3)">🗑</div>
+  <div class="topbar">
+    <div class="brand">news<span>r</span><small>EDITORIAL DESK</small></div>
+    <div class="conn demo" id="conn"><span class="dot"></span><span id="conn-text">Demo mode</span></div>
   </div>
 
-  <!-- List screen -->
-  <div class="screen list-screen" id="list-screen">
-    <div class="banner" id="demo-banner">
-      <b>Demo mode.</b> Tap ⚙ to connect your backend URL.
-    </div>
-    <div class="stats" id="stats">
-      <div class="stat"><div><div class="stat-v" style="color:#e8a84d" id="s-pending">0</div><div class="stat-l">Pending</div></div></div>
-      <div class="stat"><div><div class="stat-v" style="color:#4de88e" id="s-live">0</div><div class="stat-l">Live</div></div></div>
-      <div class="stat clickable" onclick="openArchive('rejected','Rejected')" style="cursor:pointer">
-        <div><div class="stat-v" style="color:#e85d5d" id="s-rejected">0</div><div class="stat-l">Rejected</div></div>
-        <div class="stat-arr">›</div>
-      </div>
-      <div class="stat clickable" onclick="openArchive('approved','Approved today',true)" style="cursor:pointer">
-        <div><div class="stat-v" style="color:#4d8ef5" id="s-today">0</div><div class="stat-l">Today</div></div>
-        <div class="stat-arr">›</div>
-      </div>
-    </div>
-    <div class="approve-all-wrap">
-      <button class="approve-all" id="approve-all-btn" onclick="approveAll()">✓ Approve all pending</button>
-    </div>
-    <div class="section-label">Review queue <span id="queue-count" style="background:#1e1e2a;color:#999;font-size:9px;padding:2px 7px;border-radius:9px;margin-left:4px">0</span></div>
-    <div id="story-list"></div>
+  <div class="banner" id="demo-banner">
+    You're in <b>demo mode</b> with sample stories. Click <b>Settings</b> and paste your backend URL to connect to live data.
   </div>
 
-  <!-- Detail screen -->
-  <div class="screen detail-screen hidden" id="detail-screen">
-    <div class="detail-header">
-      <div class="back-btn" onclick="goBack()">‹</div>
-      <div class="detail-title" id="detail-title">Story</div>
-      <div class="top-toggle" id="top-toggle-btn" onclick="toggleTop()">⭐ Top</div>
-    </div>
-    <div class="detail-body" id="detail-body"></div>
-    <div class="action-bar" id="action-bar"></div>
+  <div class="toolbar">
+    <button class="iconbtn" onclick="toggleSettings()">⚙ Settings</button>
+    <button class="iconbtn" onclick="loadQueue()">↻ Refresh</button>
+    <button class="iconbtn iconbtn-approve" id="approve-all-btn" onclick="approveAll()">✓ Approve all</button>
+    <button class="iconbtn iconbtn-flush" onclick="flushFeed()">🗑 Flush feed</button>
   </div>
 
-</div>
-
-<!-- Settings modal -->
-<div class="modal-overlay" id="settings-overlay" onclick="if(event.target===this) closeSettings()">
-  <div class="modal">
-    <div class="modal-handle"></div>
+  <div class="settings" id="settings">
     <h3>Connection</h3>
-    <div class="mfield">
+    <div class="field">
       <label>Backend URL</label>
-      <input id="cfg-url" placeholder="https://newsr-ai.onrender.com"/>
-      <div class="hint">Your Render service URL.</div>
+      <input id="cfg-url" placeholder="https://newsr-ai.onrender.com" />
+      <div class="hint">Your Render service URL. Leave blank to stay in demo mode.</div>
     </div>
-    <div class="mfield">
+    <div class="field">
       <label>Editor name</label>
-      <input id="cfg-editor" placeholder="david"/>
+      <input id="cfg-editor" placeholder="david" />
+      <div class="hint">Recorded against every approve / edit / reject.</div>
     </div>
-    <div class="mfield">
+    <div class="field">
       <label>Admin token (optional)</label>
-      <input id="cfg-token" type="password" placeholder="leave blank if no auth set"/>
+      <input id="cfg-token" placeholder="leave blank if backend has no auth yet" />
+      <div class="hint">Sent as the x-editor-token header.</div>
     </div>
-    <div class="mbtn-row">
-      <button class="mbtn mbtn-primary" onclick="saveSettings()">Save & connect</button>
-      <button class="mbtn mbtn-ghost" onclick="closeSettings()">Cancel</button>
+    <div class="settings-row">
+      <button class="btn btn-primary" onclick="saveSettings()">Save & connect</button>
+      <button class="btn btn-ghost" onclick="toggleSettings()">Close</button>
     </div>
   </div>
-</div>
 
-<!-- Archive modal -->
-<div class="modal-overlay" id="archive-overlay" onclick="if(event.target===this) closeArchive()">
-  <div class="archive-modal" id="archive-modal">
-    <div class="archive-head">
-      <div class="archive-title" id="archive-title">Archive</div>
-      <div class="hbtn" onclick="closeArchive()">✕</div>
-    </div>
-    <div id="archive-body"></div>
-    <button class="load-more" id="load-more-btn" onclick="loadMoreArchive()">Load older</button>
+  <div class="stats" id="stats">
+    <div class="stat"><div class="v" style="color:#e8a84d" id="s-pending">0</div><div class="l">Pending</div></div>
+    <div class="stat stat-click" onclick="openArchive('approved','Live stories')"><div class="v" style="color:#4de88e" id="s-live">0</div><div class="l">Live <span class="stat-hint">↗</span></div></div>
+    <div class="stat stat-click" onclick="openArchive('rejected','Rejected stories')"><div class="v" style="color:#e85d5d" id="s-rejected">0</div><div class="l">Rejected <span class="stat-hint">↗</span></div></div>
+    <div class="stat stat-click" onclick="openArchive('approved','Approved today',true)"><div class="v" style="color:#4d8ef5" id="s-today">0</div><div class="l">Approved today <span class="stat-hint">↗</span></div></div>
   </div>
+
+  <div class="workspace">
+    <div class="list-pane">
+      <div class="list-header">Review queue <span class="list-count" id="list-count">0</span></div>
+      <div id="story-list"></div>
+    </div>
+    <div class="detail-pane" id="detail-pane">
+      <div class="detail-empty">
+        <div class="big">📰</div>
+        <div class="t">Select a story to begin</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
 
+<div class="archive-overlay" id="archive-overlay" onclick="if(event.target===this) closeArchive()">
+  <div class="archive-modal">
+    <div class="archive-head">
+      <div class="archive-title" id="archive-title">Archive</div>
+      <button class="archive-close" onclick="closeArchive()">×</button>
+    </div>
+    <div class="archive-body" id="archive-body"></div>
+    <div class="archive-foot">
+      <button class="archive-loadmore" id="archive-loadmore" onclick="loadMoreArchive()">Load older</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ── Topic vocabulary — mirrors the backend classifier exactly ────────────
+// Flat now: each topic IS its own category (no more nested sub-topics).
 const TOPICS = ['Politics','Sports','Business','Tech','Health','Entertainment','Science'];
-const TOPIC_CAT = {}; TOPICS.forEach(t => TOPIC_CAT[t] = t);
+const TOPIC_CAT={};
+TOPICS.forEach(t=>TOPIC_CAT[t]=t);
 
-// Demo data
-const DEMO_SEED = [
-  {id:'d1',headline:"Fed signals two more rate cuts before year-end",body:"Markets surged after the Fed chair hinted at easing.\n\nAnalysts say the shift marks a meaningful pivot.\n\nBond yields fell sharply.",primary_topic:'Business',is_top:false,geo_country:'US',topics:[{topic:'Business',is_primary:true},{topic:'Politics',is_primary:false}],sources:[{name:'Bloomberg',url:'#'},{name:'Reuters',url:'#'}],status:'pending_review'},
-  {id:'d2',headline:"Protein reverses cellular aging in mice",body:"Injecting GATA-6 protein restored tissue function in aged mice.\n\nResults were consistent across muscle, liver, and brain.\n\nHuman trials remain years away.",primary_topic:'Science',is_top:true,geo_country:'US',topics:[{topic:'Science',is_primary:true},{topic:'Health',is_primary:false}],sources:[{name:'Nature',url:'#'}],status:'pending_review'},
-  {id:'d3',headline:"G7 agrees on landmark AI governance framework",body:"World leaders reached a deal on binding standards for advanced AI.\n\nThe agreement covers healthcare, energy, and financial systems.\n\nRatification expected by end of 2026.",primary_topic:'Politics',is_top:false,geo_country:'GLOBAL',topics:[{topic:'Politics',is_primary:true},{topic:'Tech',is_primary:false}],sources:[{name:'BBC News',url:'#'},{name:'AP',url:'#'}],status:'pending_review'},
-];
-const DEMO_ARCHIVE = {
-  approved:[
-    {id:'a1',headline:"Bank of Canada holds rates steady",primary_topic:'Business',is_live:true,edited_by:'david',approved_at:'2026-06-20T14:30:00Z'},
-    {id:'a2',headline:"New Alzheimer's drug shows promise",primary_topic:'Health',is_live:true,edited_by:'david',approved_at:'2026-06-20T11:05:00Z'},
-  ],
-  rejected:[
-    {id:'r1',headline:"Local diner closes after 40 years",primary_topic:'Business',edited_by:'david',editor_notes:'Too local',created_at:'2026-06-19T13:00:00Z'},
-  ]
-};
-const DEMO_STATS = {pending:3,live:104,rejected:6,approved_today:38};
-
-// App state
-let cfg = {url:'',editor:'david',token:''};
+// ── Config ─────────────────────────────────────────────────────────────
+let cfg = { url:'', editor:'david', token:'' };
 let demo = true;
-let stories = {}; // id -> story object
-let order = [];   // display order
-let resolved = {}; // id -> {status}
-let drafts = {};  // id -> {headline, body, primary, secondary, notes}
+
+// ── Demo data ──────────────────────────────────────────────────────────
+const DEMO_SEED = [
+  {id:'d1',headline:"Fed signals two more rate cuts could come before year-end",
+   body:"Markets surged after the Fed chair hinted at easing, with major indices climbing in afternoon trading.\n\nAnalysts say the shift marks a meaningful pivot from the cautious tone held since last autumn.\n\nBond yields fell sharply on the news, with the 10-year Treasury at its lowest level since March.\n\nSeveral major banks have already updated their forecasts, now expecting the first cut as early as September.",
+   primary_topic:'Business', is_top:true,
+   topics:[{topic:'Business',is_primary:true},{topic:'Politics',is_primary:false}],
+   sources:[{name:'Bloomberg',url:'#'},{name:'Reuters',url:'#'},{name:'Financial Times',url:'#'}],status:'pending_review'},
+  {id:'d2',headline:"A protein that reverses cellular aging has been found in mice",
+   body:"Injecting the GATA-6 protein into aged mice restored tissue function to levels comparable to young adults within three weeks.\n\nThe results were consistent across muscle, liver, and brain tissue samples.\n\nScientists caution that human trials remain years away and that dosing at scale presents real challenges.\n\nSeveral leading geroscientists called the findings the most significant of the decade.",
+   primary_topic:'Science', is_top:false,
+   topics:[{topic:'Science',is_primary:true},{topic:'Health',is_primary:false}],
+   sources:[{name:'Nature',url:'#'},{name:'Science Daily',url:'#'}],status:'pending_review'},
+  {id:'d3',headline:"G7 nations agree on landmark AI governance framework by 2027",
+   body:"After two days of negotiations, world leaders reached a deal creating binding standards for advanced AI in critical infrastructure.\n\nThe agreement covers healthcare, energy grids, and financial systems, with mandatory audit requirements every two years.\n\nThree countries initially pushed back before a compromise was reached late Thursday.\n\nThe framework will be ratified by national legislatures before the end of 2026.",
+   primary_topic:'Politics', is_top:false,
+   topics:[{topic:'Politics',is_primary:true},{topic:'Tech',is_primary:false},{topic:'Business',is_primary:false}],
+   sources:[{name:'BBC News',url:'#'},{name:'AP',url:'#'},{name:'Reuters',url:'#'}],status:'pending_review'},
+];
+let DEMO_STATS = { pending:3, live:104, rejected:6, approved_today:38 };
+
+// Sample data for the archive browser in demo mode. Extended with full
+// content (body/topics/sources) so re-editing works in demo mode too.
+const DEMO_ARCHIVE = {
+  approved: [
+    {id:'a1',headline:"Bank of Canada holds rates steady amid inflation concerns",primary_topic:'Business',is_live:true,edited_by:'david',approved_at:'2026-06-20T14:30:00Z',
+     body:"The Bank of Canada kept its benchmark rate unchanged today, citing persistent inflation pressure in housing and services.\n\nGovernor Tiff Macklem said the bank needs more evidence inflation is durably returning to target before cutting further.\n\nMarkets had priced in a small chance of a cut, so the hold was broadly in line with expectations.\n\nThe next rate decision is scheduled for the following quarter.",
+     topics:[{topic:'Business',is_primary:true},{topic:'Politics',is_primary:false}],
+     sources:[{name:'Reuters',url:'#'},{name:'Financial Post',url:'#'}], editor_notes:''},
+    {id:'a2',headline:"New Alzheimer's drug shows promise in late-stage trial",primary_topic:'Health',is_live:true,edited_by:'david',approved_at:'2026-06-20T11:05:00Z',
+     body:"A late-stage clinical trial found the experimental drug slowed cognitive decline by 27% over 18 months.\n\nThe trial followed 1,800 patients across 12 countries with early-stage Alzheimer's disease.\n\nSide effects were mostly mild, though a small number of patients experienced brain swelling requiring monitoring.\n\nThe manufacturer plans to file for regulatory approval within the year.",
+     topics:[{topic:'Health',is_primary:true},{topic:'Science',is_primary:false}],
+     sources:[{name:'NEJM',url:'#'},{name:'STAT News',url:'#'}], editor_notes:''},
+    {id:'a3',headline:"Raptors sign veteran forward in surprise trade",primary_topic:'Sports',is_live:true,edited_by:'sarah',approved_at:'2026-06-19T20:15:00Z',
+     body:"The Toronto Raptors acquired a veteran forward in a multi-team trade finalized late Thursday.\n\nThe move signals the front office's intent to compete for a playoff spot this season.\n\nTwo future second-round picks were included in the package sent out.\n\nThe newly acquired player is expected to start immediately.",
+     topics:[{topic:'Sports',is_primary:true},{topic:'Business',is_primary:false}],
+     sources:[{name:'TSN',url:'#'},{name:'The Athletic',url:'#'}], editor_notes:''},
+    {id:'a4',headline:"EU proposes new digital privacy framework",primary_topic:'Politics',is_live:false,edited_by:'david',approved_at:'2026-06-17T09:40:00Z',
+     body:"The European Commission unveiled a draft framework expanding data protection rules to AI-driven services.\n\nThe proposal would require companies to disclose when algorithms make consequential decisions about users.\n\nTech industry groups warned the rules could slow AI deployment in the bloc.\n\nThe framework now moves to member state negotiations.",
+     topics:[{topic:'Politics',is_primary:true},{topic:'Tech',is_primary:false}],
+     sources:[{name:'Politico',url:'#'},{name:'Reuters',url:'#'}], editor_notes:''},
+    {id:'a5',headline:"Streaming giant cancels three flagship series",primary_topic:'Entertainment',is_live:false,edited_by:'sarah',approved_at:'2026-06-15T16:00:00Z',
+     body:"A major streaming platform cancelled three original series despite strong critical reception.\n\nThe company cited rising production costs and softer subscriber growth as factors.\n\nAll three shows will retain their existing seasons on the platform.\n\nIndustry analysts say the move reflects broader belt-tightening across streaming services.",
+     topics:[{topic:'Entertainment',is_primary:true},{topic:'Business',is_primary:false}],
+     sources:[{name:'Variety',url:'#'},{name:'Hollywood Reporter',url:'#'}], editor_notes:''},
+    {id:'a6',headline:"Quantum chip startup raises $200M Series B",primary_topic:'Tech',is_live:false,edited_by:'david',approved_at:'2026-06-12T08:20:00Z',
+     body:"The startup, which builds error-corrected quantum processors, closed a $200M round led by two major venture funds.\n\nThe company says the funding will accelerate its path to a commercially useful quantum chip within three years.\n\nSeveral competitors have raised similar rounds in recent months as quantum computing investment accelerates.\n\nThe round values the company at just over $1 billion.",
+     topics:[{topic:'Tech',is_primary:true},{topic:'Business',is_primary:false}],
+     sources:[{name:'TechCrunch',url:'#'}], editor_notes:''},
+  ],
+  rejected: [
+    {id:'r1',headline:"Local diner closes after 40 years",primary_topic:'Business',edited_by:'david',editor_notes:'Too local, not national relevance',created_at:'2026-06-19T13:00:00Z',
+     body:"A family-owned diner that had served the same neighbourhood for four decades closed its doors this week.\n\nThe owners cited rising rent and declining foot traffic as the primary reasons.\n\nRegular customers gathered for a final meal on the restaurant's last night of service.",
+     topics:[{topic:'Business',is_primary:true},{topic:'Politics',is_primary:false}],
+     sources:[{name:'Local News Network',url:'#'}]},
+    {id:'r2',headline:"Celebrity spotted at airport wearing sunglasses",primary_topic:'Entertainment',edited_by:'sarah',editor_notes:'Not newsworthy',created_at:'2026-06-18T10:30:00Z',
+     body:"A well-known actor was photographed at an international airport wearing sunglasses and a baseball cap.\n\nThe brief sighting generated minor attention on social media.",
+     topics:[{topic:'Entertainment',is_primary:true}],
+     sources:[{name:'Gossip Blog',url:'#'}]},
+    {id:'r3',headline:"Questionable health claim about lemon water",primary_topic:'Health',edited_by:'david',editor_notes:'Unverified, pseudo-science',created_at:'2026-06-16T07:45:00Z',
+     body:"An article claimed drinking lemon water each morning can dramatically boost metabolism.\n\nNo credible clinical studies support the specific claims made in the original piece.\n\nSeveral registered dietitians have publicly disputed similar claims in the past.",
+     topics:[{topic:'Health',is_primary:true}],
+     sources:[{name:'Wellness Blog',url:'#'}]},
+  ],
+};
+
+// ── Session state ──────────────────────────────────────────────────────
+let stories = {};      // id -> raw story object
+let order = [];        // display order of ids (pending first, resolved sink to bottom)
+let resolved = {};     // id -> {status:'approved'|'rejected', note}
+let drafts = {};       // id -> {headline, body, primary, secondary:[]}
 let selectedId = null;
-let archive = {status:null,title:'',todayOnly:false,items:[],cursor:null,exhausted:false};
 
 // ── Networking ─────────────────────────────────────────────────────────
-function hdrs(){ const h={'Content-Type':'application/json'}; if(cfg.token)h['x-editor-token']=cfg.token; return h; }
-async function api(path,opts={}){ const r=await fetch(cfg.url.replace(/\/$/,'')+path,{headers:hdrs(),...opts}); if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); }
+function headers(){
+  const h={'Content-Type':'application/json'};
+  if(cfg.token) h['x-editor-token']=cfg.token;
+  return h;
+}
+async function api(path,opts={}){
+  const res=await fetch(cfg.url.replace(/\/$/,'')+path,{headers:headers(),...opts});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
 
-// ── Load ───────────────────────────────────────────────────────────────
+// ── Load queue ─────────────────────────────────────────────────────────
 async function loadQueue(){
-  let list,statsData;
-  if(demo){ list=DEMO_SEED; statsData=DEMO_STATS; }
-  else {
-    setConn('connecting');
-    try{ const d=await api('/editorial/queue'); list=d.queue||[]; statsData=d.stats||{}; setConn('live'); }
-    catch(e){ setConn('err'); document.getElementById('story-list').innerHTML=`<div class="empty-q"><div class="e-icon">⚠️</div><div class="e-title">Can't reach backend</div><div class="e-sub">Check settings and try again</div></div>`; return; }
+  let list, statsData;
+  if(demo){
+    list = DEMO_SEED;
+    statsData = DEMO_STATS;
+  } else {
+    setConn('live','Connecting…');
+    try{
+      const data=await api('/editorial/queue');
+      list = data.queue||[];
+      statsData = data.stats||{};
+      setConn('live','Connected');
+    }catch(e){
+      setConn('err','Connection failed');
+      document.getElementById('story-list').innerHTML =
+        '<div class="list-empty">⚠️ Could not reach the backend.<br/>Check the URL in Settings.</div>';
+      return;
+    }
   }
-  stories={}; order=[]; resolved={}; drafts={};
-  list.forEach(s=>{ stories[s.id]=s; order.push(s.id); drafts[s.id]=buildDraft(s); });
+
+  // Fresh load resets session state to match the authoritative source.
+  stories = {}; order = []; resolved = {}; drafts = {};
+  list.forEach(s=>{
+    stories[s.id]=s;
+    order.push(s.id);
+    drafts[s.id]=buildDraft(s);
+  });
+
   renderStats(statsData);
-  renderList();
+  selectedId = order.length ? order[0] : null;
+  renderAll();
 }
 
 function buildDraft(s){
-  const primary=s.primary_topic||(s.topics||[]).find(t=>t.is_primary)?.topic||TOPICS[0];
-  const secondary=(s.topics||[]).filter(t=>!t.is_primary).map(t=>t.topic);
-  return{headline:s.headline,body:s.body,primary,secondary,notes:s.editor_notes||'',geo:s.geo_country||''};
+  const primary = s.primary_topic || (s.topics||[]).find(t=>t.is_primary)?.topic || Object.keys(TOPIC_CAT)[0];
+  const secondary = (s.topics||[]).filter(t=>!t.is_primary).map(t=>t.topic);
+  return { headline:s.headline, body:s.body, primary, secondary, notes:s.editor_notes||'', geo:s.geo_country||'' };
+  // Note: is_top lives on the story object itself (stories[id].is_top), not on the draft,
+  // since toggling it doesn't require saving the full form first.
 }
 
 function renderStats(s){
-  ['pending','live','rejected','today'].forEach(k=>{
-    const el=document.getElementById('s-'+k); if(el) el.textContent=s[k]??s['approved_today']??0;
-  });
   document.getElementById('s-pending').textContent=s.pending??0;
   document.getElementById('s-live').textContent=s.live??0;
   document.getElementById('s-rejected').textContent=s.rejected??0;
   document.getElementById('s-today').textContent=s.approved_today??0;
 }
 
+// ── Render: list + detail ─────────────────────────────────────────────
+function renderAll(){ renderList(); renderDetail(); }
+
 function renderList(){
   const el=document.getElementById('story-list');
-  const pending=order.filter(id=>!resolved[id]);
-  document.getElementById('queue-count').textContent=pending.length;
-  if(!order.length){ el.innerHTML=`<div class="empty-q"><div class="e-icon">✅</div><div class="e-title">Queue is clear</div><div class="e-sub">All caught up</div></div>`; return; }
-  el.innerHTML=order.map(id=>{
-    const s=stories[id], d=drafts[id], res=resolved[id];
-    const dot=res?res.status:(s.status==='approved'?'approved':s.status==='rejected'?'rejected':s.status==='editing'?'editing':'pending');
-    const topPill=s.is_top?`<span class="top-pill">🔴 TOP</span>`:'';
-    const meta=res
-      ? `<span style="color:${res.status==='approved'?'#4de88e':'#e85d5d'};font-weight:600">${res.status==='approved'?'✓ Published':'✕ Rejected'}</span>`
-      : (s.status==='approved'?`<span style="color:#4de88e">🗄 Live</span>`:s.status==='rejected'?`<span style="color:#e85d5d">🗄 Rejected</span>`:`<span>${d.primary}</span>`);
-    return `<div class="story-item" onclick="openStory('${id}')">
-      <div class="story-dot ${dot}" style="margin-top:6px"></div>
-      <div class="story-info"><div class="story-head">${esc(d.headline)}</div>
-        <div class="story-meta">${meta}${topPill}</div></div>
-      <div class="story-arr">›</div>
-    </div>`;
+  document.getElementById('list-count').textContent = order.length - Object.keys(resolved).length;
+
+  if(!order.length){
+    el.innerHTML='<div class="list-empty">✅ Queue is clear</div>';
+    return;
+  }
+
+  el.innerHTML = order.map(id=>{
+    const s = stories[id];
+    const draft = drafts[id];
+    const res = resolved[id];
+    const dotClass = res ? res.status
+      : s.status==='approved' ? 'approved'
+      : s.status==='rejected' ? 'rejected'
+      : s.status==='editing' ? 'editing' : 'pending';
+    const rowClass = ['story-row', id===selectedId?'selected':'', res?'resolved':''].join(' ').trim();
+    // Items opened from the archive (already approved/rejected, not just
+    // resolved this session) get a small 🗄 label so it's clear at a glance
+    // this isn't a fresh pending item.
+    let metaContent;
+    if (res) {
+      metaContent = `<span class="row-resolved-tag ${res.status}">${res.status==='approved'?'✓ Published':'✕ Rejected'}</span>`;
+    } else if (s.status==='approved') {
+      metaContent = `<span class="row-resolved-tag approved">🗄 Live story</span>`;
+    } else if (s.status==='rejected') {
+      metaContent = `<span class="row-resolved-tag rejected">🗄 Rejected story</span>`;
+    } else {
+      metaContent = `<span>${draft.primary}</span>`;
+    }
+    const topBadge = s.is_top ? `<span class="top-badge">🔴 TOP</span>` : '';
+    return `
+      <div class="${rowClass}" id="row-${id}" onclick="selectStory('${id}')">
+        <div class="row-top">
+          <div class="row-dot ${dotClass}"></div>
+          <div class="row-headline">${esc(draft.headline)}</div>
+        </div>
+        <div class="row-meta">${topBadge}${metaContent}</div>
+      </div>`;
   }).join('');
 }
 
-// ── Story detail ───────────────────────────────────────────────────────
-function openStory(id){
-  selectedId=id;
-  renderDetail();
-  document.getElementById('list-screen').classList.add('hidden');
-  document.getElementById('detail-screen').classList.remove('hidden');
-  document.getElementById('refresh-btn').style.display='none';
-  document.getElementById('flush-btn').style.display='none';
-  document.getElementById('brand-text').textContent='';
-}
-
-function goBack(){
-  document.getElementById('detail-screen').classList.add('hidden');
-  document.getElementById('list-screen').classList.remove('hidden');
-  document.getElementById('brand-text').innerHTML='news<span style="color:#e8c547">r</span>';
-  document.getElementById('refresh-btn').style.display='flex';
-  document.getElementById('flush-btn').style.display='flex';
-  renderList();
-}
-
 function renderDetail(){
-  const id=selectedId, s=stories[id], d=drafts[id], res=resolved[id];
-  const locked=!!res;
-  const statusLabel=res?res.status:s.status==='approved'?'approved':s.status==='rejected'?'rejected':s.status==='editing'?'editing':'pending';
-  const statusText=res?(res.status==='approved'?'Published':'Rejected'):s.status==='approved'?'Live — editing':s.status==='rejected'?'Rejected — editing':s.status==='editing'?'Editing':'Pending review';
+  const el = document.getElementById('detail-pane');
+  if(!selectedId || !stories[selectedId]){
+    el.innerHTML = `<div class="detail-empty"><div class="big">📰</div><div class="t">Select a story to begin</div></div>`;
+    return;
+  }
+  const id = selectedId;
+  const s = stories[id];
+  const draft = drafts[id];
+  const res = resolved[id];
+  // statusLabel reflects the TRUE backend status, including already-resolved
+  // items reopened from the archive (not just things resolved this session).
+  const statusLabel = res ? res.status
+    : s.status==='approved' ? 'approved'
+    : s.status==='rejected' ? 'rejected'
+    : s.status==='editing' ? 'editing' : 'pending';
+  const statusText = res
+    ? (res.status==='approved'?'Published':'Rejected')
+    : s.status==='approved' ? 'Live — editing'
+    : s.status==='rejected' ? 'Rejected — editing'
+    : s.status==='editing' ? 'Editing' : 'Pending review';
+  const sources = s.sources || [];
+  const locked = !!res; // only truly locked once resolved THIS session
 
-  // Header
-  document.getElementById('detail-title').textContent=d.headline;
-  const topBtn=document.getElementById('top-toggle-btn');
-  topBtn.textContent=s.is_top?'🔴 TOP':'⭐ Top';
-  topBtn.className='top-toggle'+(s.is_top?' active':'');
+  const primaryOptGroups = TOPICS.map(t=>
+    `<option value="${t}" ${t===draft.primary?'selected':''}>${t}</option>`
+  ).join('');
 
-  // Available secondary topics
-  const availSec=TOPICS.filter(t=>t!==d.primary&&!d.secondary.includes(t));
-  const secOpts=availSec.map(t=>`<option value="${t}">${t}</option>`).join('');
-  const primOpts=TOPICS.map(t=>`<option value="${t}" ${t===d.primary?'selected':''}>${t}</option>`).join('');
+  const availableForSecondary = TOPICS
+    .filter(t=>t!==draft.primary && !draft.secondary.includes(t))
+    .map(t=>`<option value="${t}">${t}</option>`).join('');
 
-  document.getElementById('detail-body').innerHTML=`
-    <div class="status-row">
-      <span class="status-pill ${statusLabel}">${statusText}</span>
+  el.innerHTML = `
+    <div class="detail-top">
+      <div class="detail-status ${statusLabel}">${statusText}</div>
+      <button
+        class="top-toggle-btn ${s.is_top ? 'is-top' : ''}"
+        onclick="toggleTop('${id}')"
+        title="${s.is_top ? 'Remove Top Story designation' : 'Designate as Top Story'}"
+      >${s.is_top ? '🔴 TOP STORY' : '⭐ Mark as Top Story'}</button>
     </div>
-    <div class="dfield">
+
+    <div class="dfield dfield-headline">
       <label>Headline</label>
-      <input class="headline-input" id="f-head" value="${esc(d.headline)}" ${locked?'disabled':''} oninput="drafts['${id}'].headline=this.value"/>
+      <input id="f-headline" value="${esc(draft.headline)}" ${locked?'disabled':''} oninput="drafts['${id}'].headline=this.value"/>
     </div>
+
     <div class="dfield">
       <label>Body</label>
-      <textarea id="f-body" ${locked?'disabled':''} oninput="drafts['${id}'].body=this.value">${esc(d.body)}</textarea>
+      <textarea id="f-body" ${locked?'disabled':''} oninput="drafts['${id}'].body=this.value">${esc(draft.body)}</textarea>
     </div>
+
     <div class="dfield">
-      <label>Primary topic</label>
-      <select id="f-primary" ${locked?'disabled':''} onchange="changePrimary('${id}',this.value)">${primOpts}</select>
+      <label>Primary topic — the one shown on the card</label>
+      <select id="f-primary" ${locked?'disabled':''} onchange="changePrimary('${id}', this.value)">${primaryOptGroups}</select>
     </div>
+
     <div class="dfield">
-      <label>Extra topics — hidden metadata</label>
-      <div class="chip-row" id="chip-row-${id}">
-        ${d.secondary.map(t=>`<span class="chip">${esc(t)}${locked?'':`<button onclick="removeSec('${id}','${t}')" aria-label="Remove ${t}">×</button>`}</span>`).join('')}
+      <label>Extra topics — hidden metadata that refines each user's recommendations</label>
+      <div class="topic-row">
+        ${draft.secondary.map(t=>`
+          <span class="topic-chip">${t}${locked?'':`<button onclick="removeSecondary('${id}','${t}')">×</button>`}</span>
+        `).join('')}
+        ${!locked ? `
+          <select class="add-topic-select" onchange="addSecondary('${id}', this.value); this.value='';">
+            <option value="">+ Add topic…</option>
+            ${availableForSecondary}
+          </select>` : ''}
       </div>
-      ${!locked?`
-      <select class="add-topic" style="margin-top:8px" onchange="addSec('${id}',this.value);this.value=''">
-        <option value="">+ Add standard topic…</option>${secOpts}
-      </select>
-      <div class="custom-row">
-        <input id="f-custom-${id}" placeholder="Custom tag (e.g. Federal Reserve)…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustom('${id}');}"/>
-        <button onclick="addCustom('${id}')">Add</button>
-      </div>
-      <div class="dfield-hint">Custom tags never appear on cards — hidden metadata only.</div>`:''}
+      ${!locked ? `
+        <div class="custom-topic-row">
+          <input id="f-customtopic-${id}" placeholder="Or type a custom tag (e.g. Federal Reserve, Taylor Swift)…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSecondary('${id}');}"/>
+          <button onclick="addCustomSecondary('${id}')">+ Add</button>
+        </div>` : ''}
+      <div class="dhint">These never appear on the card. They help match this story to users who've shown interest in those topics, even when this isn't their primary display category. Custom tags work too — they just won't show up on the radar chart, which only tracks the 7 main categories.</div>
     </div>
+
     <div class="dfield">
       <label>Editor notes</label>
-      <input id="f-notes-${id}" value="${esc(d.notes)}" ${locked?'disabled':''} placeholder="Rejection reason or notes…" oninput="drafts['${id}'].notes=this.value"/>
+      <input id="f-notes" value="${esc(draft.notes||'')}" ${locked?'disabled':''} placeholder="e.g. rejection reason, or a note for other editors" oninput="drafts['${id}'].notes=this.value"/>
     </div>
+
     <div class="dfield">
-      <label>Geographic origin <span style="opacity:.5;font-weight:400">(hidden · used for ranking)</span></label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="f-geo-${id}" value="${esc(d.geo||'')}" ${locked?'disabled':''}
-          placeholder="US, CA, GB, GLOBAL…" maxlength="6"
-          style="flex:1;text-transform:uppercase;font-family:monospace;letter-spacing:1px"
-          oninput="drafts['${id}'].geo=this.value.toUpperCase()"/>
-        ${!locked?`<button class="dbtn btn-save" style="flex:0;white-space:nowrap;font-size:11px;padding:8px 11px" onclick="suggestGeo('${id}')">✨ Suggest</button>`:''}
-      </div>
-      <div id="geo-reasoning-${id}" style="display:none;margin-top:6px;padding:8px 10px;background:rgba(196,125,232,0.1);border-radius:8px;font-size:10px;color:#c47de8;line-height:1.5"></div>
+      <label>AI subtopics — internal taxonomy, never shown to users</label>
+      ${(() => {
+        const subs = s.subtopics || [];
+        if(!subs.length) return `<div style="font-size:11px;color:#444;font-style:italic">No subtopics yet — assigned automatically when stories are ingested via the API.</div>`;
+        return `<div class="chip-row">${subs.map(sub=>`<span class="chip" style="background:rgba(196,125,232,0.1);border-color:rgba(196,125,232,0.25);color:#c47de8">${esc(sub)}</span>`).join('')}</div>`;
+      })()}
     </div>
+
+    <div class="dfield">
+      <label>Geographic origin — ISO country code <span style="color:#555;font-weight:400">(hidden from users · used for location-based ranking)</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="f-geo" value="${esc(draft.geo||'')}" ${locked?'disabled':''}
+          placeholder="US, CA, GB, GLOBAL…"
+          maxlength="6"
+          style="text-transform:uppercase;font-family:monospace;letter-spacing:1px;flex:1"
+          oninput="drafts['${id}'].geo=this.value.toUpperCase()"/>
+        ${!locked ? `<button id="geo-suggest-btn-${id}" class="btn btn-ghost" style="white-space:nowrap;font-size:11px;padding:8px 12px" onclick="suggestGeo('${id}')">✨ AI suggest</button>` : ''}
+      </div>
+      <div id="geo-reasoning-${id}" style="display:none;margin-top:7px;padding:8px 10px;background:rgba(196,125,232,0.08);border:0.5px solid rgba(196,125,232,0.2);border-radius:8px;font-size:10.5px;color:#c47de8;line-height:1.5"></div>
+      <div class="dhint">Set automatically by AI during synthesis. Override if incorrect. Two-letter ISO code (US, CA, GB…) or GLOBAL for worldwide stories. Never displayed in the app.</div>
+    </div>
+
     <div class="dfield">
       <label>Sources</label>
-      ${(s.sources||[]).map(src=>`<div class="source-item">📎 ${esc(src.name||src)}</div>`).join('')||'<div class="source-item" style="color:#555">No sources</div>'}
+      <div class="sources-list">
+        ${sources.length ? sources.map(src=>`<div class="source-row">📎 ${esc(src.name||src)}</div>`).join('') : '<div class="source-row">No sources attached</div>'}
+      </div>
     </div>
-  `;
 
-  // Action bar
-  const bar=document.getElementById('action-bar');
-  if(res){
-    bar.innerHTML=`<div style="flex:1;text-align:center;font-size:12px;font-weight:600;padding:10px;border-radius:10px;background:${res.status==='approved'?'rgba(77,232,142,0.1)':'rgba(232,93,93,0.1)'};color:${res.status==='approved'?'#4de88e':'#e85d5d'}">${res.status==='approved'?'✓ Published':'✕ Rejected'}</div>`;
-  } else if(s.status==='approved'){
-    bar.innerHTML=`<button class="action-btn btn-save" onclick="doSave('${id}')">💾 Save</button><button class="action-btn btn-unpublish" onclick="doReject('${id}')">🚫 Unpublish</button>`;
-  } else if(s.status==='rejected'){
-    bar.innerHTML=`<button class="action-btn btn-approve" onclick="doApprove('${id}')">✓ Publish</button><button class="action-btn btn-save" onclick="doSave('${id}')">💾 Save</button>`;
-  } else {
-    bar.innerHTML=`<button class="action-btn btn-approve" onclick="doApprove('${id}')">✓ Approve</button><button class="action-btn btn-save" onclick="doSave('${id}')">💾</button><button class="action-btn btn-reject" onclick="doReject('${id}')">✕</button>`;
+    ${res
+      ? `<div class="resolved-note" style="background:${res.status==='approved'?'rgba(77,232,142,0.1);color:#4de88e':'rgba(232,93,93,0.1);color:#e85d5d'}">
+           ${res.status==='approved' ? '✓ Published — now live to readers' : '✕ Rejected — never shown'}
+         </div>`
+      : s.status==='approved'
+      ? `<div class="detail-actions">
+           <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
+           <button class="dbtn dbtn-reject" onclick="doReject('${id}')">🚫 Unpublish</button>
+         </div>`
+      : s.status==='rejected'
+      ? `<div class="detail-actions">
+           <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
+           <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
+         </div>`
+      : `<div class="detail-actions">
+           <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
+           <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
+           <button class="dbtn dbtn-reject" onclick="doReject('${id}')">✕ Reject</button>
+         </div>`}
+  `;
+}
+
+// ── Selection + topic editing ─────────────────────────────────────────
+function selectStory(id){
+  selectedId = id;
+  renderAll();
+}
+
+function changePrimary(id, newPrimary){
+  const d = drafts[id];
+  d.primary = newPrimary;
+  d.secondary = d.secondary.filter(t=>t!==newPrimary); // no duplicate as both
+  renderDetail();
+}
+
+function addSecondary(id, slug){
+  if(!slug) return;
+  const d = drafts[id];
+  if(slug!==d.primary && !d.secondary.includes(slug)) d.secondary.push(slug);
+  renderDetail();
+}
+
+// Free-text tag, not limited to the fixed 7-topic vocabulary. Useful for
+// specific hidden metadata (e.g. "Federal Reserve") that's more precise than
+// the broad category alone, without bloating the visible UI or the radar —
+// custom tags are simply ignored by the radar, which only tracks the 7 cats.
+// AI geo-country suggestion — calls Claude via the backend to identify the
+// primary country a story is about. Pre-fills the field; editor confirms or corrects.
+async function suggestGeo(id){
+  const btn = document.getElementById('geo-suggest-btn-'+id);
+  const reasoning = document.getElementById('geo-reasoning-'+id);
+  if(btn){ btn.disabled=true; btn.textContent='Analyzing…'; }
+
+  if(demo){
+    // Demo fallback: simulate a suggestion based on the story's primary topic
+    const s = stories[id];
+    const demos = {Business:'US',Politics:'CA',Tech:'US',Health:'GB',Science:'GLOBAL',Sports:'US',Entertainment:'US'};
+    const code = demos[s.primary_topic] || 'US';
+    setTimeout(()=>{
+      drafts[id].geo = code;
+      renderDetail();
+      toast(`✨ AI suggested: ${code}`);
+    }, 900);
+    return;
+  }
+
+  try{
+    const data = await api(`/editorial/story/${id}/geo-suggest`);
+    const s = data.suggestion || {};
+    if(s.geo_country){
+      drafts[id].geo = s.geo_country;
+      renderDetail();
+      // Show reasoning after re-render (elements are recreated)
+      const r = document.getElementById('geo-reasoning-'+id);
+      if(r && s.reasoning){
+        const conf = {high:'🟢',medium:'🟡',low:'🔴'}[s.confidence]||'';
+        r.style.display='block';
+        r.textContent = `${conf} ${s.confidence} confidence — ${s.reasoning}`;
+      }
+      toast(`✨ AI suggested: ${s.geo_country}`);
+    } else {
+      toast('AI could not determine a location');
+    }
+  }catch(e){
+    toast('Geo suggestion failed');
   }
 }
 
-// ── Topic editing ──────────────────────────────────────────────────────
-function changePrimary(id,v){ const d=drafts[id]; d.primary=v; d.secondary=d.secondary.filter(t=>t!==v); renderDetail(); }
-function addSec(id,slug){ if(!slug)return; const d=drafts[id]; if(slug!==d.primary&&!d.secondary.includes(slug)) d.secondary.push(slug); renderDetail(); }
-function removeSec(id,slug){ const d=drafts[id]; d.secondary=d.secondary.filter(t=>t!==slug); renderDetail(); }
-function addCustom(id){ const inp=document.getElementById('f-custom-'+id); const raw=(inp.value||'').trim(); if(!raw)return; const tag=raw.replace(/\w\S*/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase()); const d=drafts[id]; if(!d.secondary.includes(tag)) d.secondary.push(tag); renderDetail(); }
+// Flush all live stories — sets expires_at = NOW() so the app feed immediately
+// empties. The replenisher will refill from the review queue on its next tick.
+// Data is fully preserved in the archive; only the expiry is changed.
+async function flushFeed(){
+  const liveCount = parseInt(document.getElementById('s-live').textContent)||0;
+  const msg = liveCount
+    ? `This will immediately expire all ${liveCount} live stories. The app feed will be empty until editors approve new stories. This cannot be undone.\n\nContinue?`
+    : 'No live stories found. Nothing to flush.';
+  if(!liveCount || !confirm(msg)) return;
 
-// ── Top story toggle ───────────────────────────────────────────────────
-async function toggleTop(){
-  if(!selectedId)return;
-  const s=stories[selectedId]; const newVal=!s.is_top;
-  if(!demo){ try{ await api('/editorial/'+selectedId+'/top',{method:'POST',body:JSON.stringify({is_top:newVal,editor_id:cfg.editor})}); } catch(e){ toast('Toggle failed'); return; } }
-  s.is_top=newVal;
-  toast(newVal?'🔴 Marked as Top Story':'Top designation removed');
+  if(demo){
+    DEMO_STATS.live=0;
+    renderStats(DEMO_STATS);
+    toast(`🗑 Feed flushed — ${liveCount} stories expired`);
+    return;
+  }
+
+  try{
+    const data = await api('/editorial/flush-live',{method:'POST',body:JSON.stringify({editor_id:cfg.editor})});
+    toast(`🗑 Feed flushed — ${data.flushed} stories expired`);
+    refreshStatsLive();
+  }catch(e){
+    toast('Flush failed');
+  }
+}
+// Works on any story regardless of status.
+async function toggleTop(id){
+  const s = stories[id];
+  if(!s) return;
+  const newVal = !s.is_top;
+  if(!demo){
+    try{
+      await api('/editorial/'+id+'/top', { method:'POST', body:JSON.stringify({ is_top:newVal, editor_id:cfg.editor }) });
+    }catch(e){ toast('Toggle failed'); return; }
+  }
+  s.is_top = newVal;
+  toast(newVal ? '🔴 Marked as Top Story' : 'Top Story designation removed');
+  renderAll();
+}
+
+function addCustomSecondary(id){
+  const input = document.getElementById('f-customtopic-'+id);
+  const raw = (input.value||'').trim();
+  if(!raw) return;
+  // Title-case it for visual consistency with the standard chips.
+  const tag = raw.replace(/\s+/g,' ').replace(/\w\S*/g, w => w[0].toUpperCase()+w.slice(1).toLowerCase());
+  const d = drafts[id];
+  if(tag!==d.primary && !d.secondary.includes(tag)) d.secondary.push(tag);
+  renderDetail();
+}
+
+function removeSecondary(id, slug){
+  const d = drafts[id];
+  d.secondary = d.secondary.filter(t=>t!==slug);
   renderDetail();
 }
 
 // ── Actions ────────────────────────────────────────────────────────────
-function gatherChanges(id){ const d=drafts[id]; return{headline:d.headline,body:d.body,primary_topic:d.primary,display_category:d.primary,secondary_topics:d.secondary,editor_notes:d.notes,geo_country:d.geo||null}; }
-
-async function persistEdit(id){
-  const changes=gatherChanges(id);
-  if(demo){ Object.assign(stories[id],{headline:changes.headline,body:changes.body,primary_topic:changes.primary_topic,editor_notes:changes.editor_notes,geo_country:changes.geo_country}); return; }
-  await api('/editorial/'+id+'/edit',{method:'POST',body:JSON.stringify({editor_id:cfg.editor,changes})});
+function gatherChanges(id){
+  const d = drafts[id];
+  return {
+    headline:        d.headline,
+    body:            d.body,
+    primary_topic:   d.primary,
+    display_category: TOPIC_CAT[d.primary],
+    secondary_topics: d.secondary,
+    editor_notes:    d.notes || null,
+    geo_country:     d.geo  || null,
+  };
 }
 
-async function doSave(id){
-  try{ await persistEdit(id); toast('Saved'); } catch(e){ toast('Save failed'); }
+async function persistEdit(id){
+  const changes = gatherChanges(id);
+  if(demo){
+    const s = stories[id];
+    Object.assign(s, { headline:changes.headline, body:changes.body, primary_topic:changes.primary_topic, editor_notes:changes.editor_notes, geo_country:changes.geo_country });
+    return;
+  }
+  await api('/editorial/'+id+'/edit', { method:'POST', body:JSON.stringify({ editor_id:cfg.editor, changes }) });
+}
+
+async function doSaveOnly(id){
+  try{
+    await persistEdit(id);
+    toast('Changes saved');
+    renderAll();
+  }catch(e){ toast('Save failed'); }
 }
 
 async function doApprove(id){
   try{
     await persistEdit(id);
-    if(!demo) await api('/editorial/'+id+'/approve',{method:'POST',body:JSON.stringify({editor_id:cfg.editor})});
-    markResolved(id,'approved');
-    toast('✓ Approved & published');
-    if(!demo) refreshStats();
-    goBack();
-  } catch(e){ toast('Approve failed'); }
-}
-
-async function doReject(id){
-  const reason=prompt('Reason (optional):')||'Rejected by editor';
-  try{
-    if(!demo) await api('/editorial/'+id+'/reject',{method:'POST',body:JSON.stringify({editor_id:cfg.editor,reason})});
-    markResolved(id,'rejected');
-    toast('✕ Rejected');
-    if(!demo) refreshStats();
-    goBack();
-  } catch(e){ toast('Reject failed'); }
+    if(demo){
+      DEMO_STATS.live++; DEMO_STATS.pending--;
+    } else {
+      await api('/editorial/'+id+'/approve', { method:'POST', body:JSON.stringify({ editor_id:cfg.editor }) });
+    }
+    markResolved(id, 'approved');
+    toast('Story approved');
+    if(!demo) refreshStatsLive(); else renderStats(DEMO_STATS);
+  }catch(e){ toast('Approve failed'); }
 }
 
 async function approveAll(){
-  const pending=order.filter(id=>{ if(resolved[id]) return false; const s=stories[id]; return s&&(s.status==='pending_review'||s.status==='editing'); });
-  if(!pending.length){ toast('No pending stories'); return; }
-  if(!confirm(`Approve all ${pending.length} pending stories?`)) return;
-  const btn=document.getElementById('approve-all-btn');
-  btn.disabled=true; btn.textContent=`Approving 0 of ${pending.length}…`;
-  let done=0, failed=0;
+  // Only target stories that are genuinely pending — not already resolved
+  // this session, and not already-approved/rejected archive items.
+  const pending = order.filter(id => {
+    if(resolved[id]) return false;
+    const s = stories[id];
+    return s && (s.status==='pending_review' || s.status==='editing');
+  });
+
+  if(!pending.length){ toast('No pending stories to approve'); return; }
+
+  const confirmed = confirm(`Approve all ${pending.length} pending stories and publish them to the live feed?`);
+  if(!confirmed) return;
+
+  const btn = document.getElementById('approve-all-btn');
+  btn.disabled = true;
+  btn.textContent = `Approving 0 of ${pending.length}…`;
+
+  let done = 0, failed = 0;
   for(const id of pending){
     try{
       if(!demo){
-        await api('/editorial/'+id+'/edit',{method:'POST',body:JSON.stringify({editor_id:cfg.editor,changes:gatherChanges(id)})});
-        await api('/editorial/'+id+'/approve',{method:'POST',body:JSON.stringify({editor_id:cfg.editor})});
+        // Persist any unsaved edits first, then approve.
+        await api('/editorial/'+id+'/edit', { method:'POST', body:JSON.stringify({ editor_id:cfg.editor, changes:gatherChanges(id) }) });
+        await api('/editorial/'+id+'/approve', { method:'POST', body:JSON.stringify({ editor_id:cfg.editor }) });
       }
-      markResolved(id,'approved'); done++;
-      btn.textContent=`Approving ${done} of ${pending.length}…`;
-    } catch(e){ failed++; }
+      markResolved(id, 'approved');
+      done++;
+      btn.textContent = `Approving ${done} of ${pending.length}…`;
+      if(demo){ DEMO_STATS.live++; DEMO_STATS.pending--; }
+    }catch(e){
+      failed++;
+    }
   }
-  btn.disabled=false; btn.textContent='✓ Approve all pending';
-  toast(failed?`${done} approved, ${failed} failed`:`${done} stories approved`);
-  if(!demo) refreshStats();
-  renderList();
-}
 
-function markResolved(id,status){ resolved[id]={status}; }
+  btn.disabled = false;
+  btn.innerHTML = '✓ Approve all';
 
-async function refreshStats(){ try{ const d=await api('/editorial/queue'); renderStats(d.stats||{}); } catch(e){} }
-
-// ── Archive ────────────────────────────────────────────────────────────
-function openArchive(status,title,todayOnly=false){
-  archive={status,title,todayOnly,items:[],cursor:null,exhausted:false};
-  document.getElementById('archive-title').textContent=title;
-  document.getElementById('archive-overlay').classList.add('open');
-  document.getElementById('archive-body').innerHTML='<div style="text-align:center;padding:30px;color:#555;font-size:13px">Loading…</div>';
-  fetchArchivePage();
-}
-function closeArchive(){ document.getElementById('archive-overlay').classList.remove('open'); }
-async function fetchArchivePage(){
-  const btn=document.getElementById('load-more-btn');
-  btn.disabled=true; btn.textContent='Loading…';
-  let items;
-  if(demo){ items=archive.cursor?[]:(DEMO_ARCHIVE[archive.status]||[]); archive.exhausted=true; }
-  else {
-    try{ const p=new URLSearchParams({status:archive.status,limit:50}); if(archive.cursor)p.set('before',archive.cursor); const d=await api('/editorial/archive?'+p); items=d.items||[]; if(items.length<50)archive.exhausted=true; }
-    catch(e){ document.getElementById('archive-body').innerHTML='<div style="text-align:center;padding:30px;color:#e85d5d;font-size:13px">⚠️ Could not load archive</div>'; btn.style.display='none'; return; }
+  if(failed){
+    toast(`${done} approved, ${failed} failed`);
+  } else {
+    toast(`${done} stories approved and published`);
   }
-  archive.items=archive.items.concat(items);
-  if(items.length){ const last=items[items.length-1]; archive.cursor=archive.status==='approved'?last.approved_at:last.created_at; }
-  const body=document.getElementById('archive-body');
-  body.innerHTML='<div style="font-size:10.5px;color:#555;padding:0 0 10px">Tap a story to re-open for editing.</div>'
-    +archive.items.map(it=>{
-      const d=new Date(it.approved_at||it.created_at);
-      const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-      const badge=archive.status==='approved'?(it.is_live?`<span class="archive-badge live">Live</span>`:`<span class="archive-badge exp">Expired</span>`):(it.editor_notes?`<span class="archive-badge exp">${esc(it.editor_notes)}</span>`:'');
-      return `<div class="archive-row" onclick="openArchivedStory('${it.id}')">
-        <div class="archive-hl">${esc(it.headline)}</div>
-        <div class="archive-meta"><span>${esc(it.primary_topic||'')}</span><span>·</span><span>${esc(it.edited_by||'')}</span><span>·</span><span>${ds}</span>${badge}</div>
-      </div>`;
-    }).join('');
-  btn.disabled=archive.exhausted; btn.textContent=archive.exhausted?'No more history':'Load older';
-  btn.style.display=archive.items.length?'':'none';
-}
-function loadMoreArchive(){ if(!archive.exhausted) fetchArchivePage(); }
-async function openArchivedStory(id){
-  let full;
-  if(demo){ full=(DEMO_ARCHIVE.approved.find(x=>x.id===id))||(DEMO_ARCHIVE.rejected.find(x=>x.id===id)); if(full) full={...full,status:DEMO_ARCHIVE.approved.some(x=>x.id===id)?'approved':'rejected'}; }
-  else { try{ const d=await api('/editorial/story/'+id); full=d.story; } catch(e){ toast('Could not load story'); return; } }
-  if(!full){ toast('Story not found'); return; }
-  stories[id]=full; drafts[id]=buildDraft(full); delete resolved[id];
-  if(!order.includes(id)) order.push(id);
-  closeArchive();
-  openStory(id);
+
+  if(!demo) refreshStatsLive(); else renderStats(DEMO_STATS);
 }
 
-// ── Settings ───────────────────────────────────────────────────────────
-function openSettings(){ document.getElementById('settings-overlay').classList.add('open'); document.getElementById('cfg-url').value=cfg.url; document.getElementById('cfg-editor').value=cfg.editor; document.getElementById('cfg-token').value=cfg.token; }
-function closeSettings(){ document.getElementById('settings-overlay').classList.remove('open'); }
+async function doReject(id){
+  const reason = prompt('Reason for rejecting (optional):') || 'Rejected by editor';
+  try{
+    if(demo){
+      DEMO_STATS.rejected++; DEMO_STATS.pending--;
+    } else {
+      await api('/editorial/'+id+'/reject', { method:'POST', body:JSON.stringify({ editor_id:cfg.editor, reason }) });
+    }
+    markResolved(id, 'rejected', reason);
+    toast('Story rejected');
+    if(!demo) refreshStatsLive(); else renderStats(DEMO_STATS);
+  }catch(e){ toast('Reject failed'); }
+}
+
+// Fade the row in place, then sink it to the bottom of the list.
+function markResolved(id, status, note){
+  resolved[id] = { status, note };
+  const row = document.getElementById('row-'+id);
+  if(row) row.classList.add('fading');
+  setTimeout(()=>{
+    order = order.filter(x=>x!==id);
+    order.push(id);
+    renderAll();
+  }, 420);
+}
+
+async function refreshStatsLive(){
+  try{ const data=await api('/editorial/queue'); renderStats(data.stats||{}); }catch(e){}
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function setConn(cls,text){
+  const el=document.getElementById('conn');
+  el.className='conn '+cls;
+  document.getElementById('conn-text').textContent=text;
+}
+
+function toggleSettings(){ document.getElementById('settings').classList.toggle('open'); }
+
 function saveSettings(){
   cfg.url=document.getElementById('cfg-url').value.trim();
   cfg.editor=document.getElementById('cfg-editor').value.trim()||'editor';
   cfg.token=document.getElementById('cfg-token').value.trim();
   demo=!cfg.url;
   document.getElementById('demo-banner').style.display=demo?'block':'none';
-  closeSettings(); loadQueue();
+  if(demo){ setConn('demo','Demo mode'); }
+  toggleSettings();
+  loadQueue();
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function setConn(s){ const d=document.getElementById('conn-dot'); d.className='conn-dot'; if(s==='live') d.classList.add('live'); else if(s==='err') d.classList.add('err'); }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
 
-// ── Geo suggestion ─────────────────────────────────────────────────────────
-async function suggestGeo(id){
-  const btn=document.querySelector(`#f-geo-${id}`);
-  const reasoning=document.getElementById('geo-reasoning-'+id);
-  const sugBtn=btn?.nextElementSibling;
-  if(sugBtn){ sugBtn.disabled=true; sugBtn.textContent='…'; }
+// ── Archive browser ────────────────────────────────────────────────────
+// Permanent history of every approved/rejected story. Nothing in the
+// database is ever deleted, so this is always retrievable — including
+// stories that have since expired off the live feed. Paginated via
+// "Load older" so history stays reachable no matter how far back it goes.
+let archive = { status:null, title:'', todayOnly:false, items:[], cursor:null, exhausted:false };
+
+function openArchive(status, title, todayOnly=false){
+  archive = { status, title, todayOnly, items:[], cursor:null, exhausted:false };
+  document.getElementById('archive-title').textContent = title;
+  document.getElementById('archive-overlay').classList.add('open');
+  document.getElementById('archive-body').innerHTML = '<div class="archive-empty">Loading…</div>';
+  fetchArchivePage();
+}
+
+function closeArchive(){
+  document.getElementById('archive-overlay').classList.remove('open');
+}
+
+async function fetchArchivePage(){
+  const loadBtn = document.getElementById('archive-loadmore');
+  loadBtn.disabled = true; loadBtn.textContent = 'Loading…';
+  let items;
   if(demo){
-    const demos={Business:'US',Politics:'CA',Tech:'US',Health:'GB',Science:'GLOBAL',Sports:'US',Entertainment:'US'};
-    const code=demos[stories[id]?.primary_topic]||'US';
-    setTimeout(()=>{
-      drafts[id].geo=code;
-      renderDetail();
-      toast('✨ AI suggested: '+code);
-    },900);
+    items = archive.cursor ? [] : (DEMO_ARCHIVE[archive.status] || []);
+    archive.exhausted = true;
+  } else {
+    try{
+      const params = new URLSearchParams({ status: archive.status, limit: 50 });
+      if(archive.cursor) params.set('before', archive.cursor);
+      const data = await api('/editorial/archive?'+params.toString());
+      items = data.items || [];
+      if(items.length < 50) archive.exhausted = true;
+    }catch(e){
+      document.getElementById('archive-body').innerHTML = '<div class="archive-empty">⚠️ Could not load archive.</div>';
+      loadBtn.style.display='none';
+      return;
+    }
+  }
+  archive.items = archive.items.concat(items);
+  if(items.length){
+    const last = items[items.length-1];
+    archive.cursor = archive.status==='approved' ? last.approved_at : last.created_at;
+  }
+  renderArchive();
+  loadBtn.disabled = archive.exhausted;
+  loadBtn.textContent = archive.exhausted ? 'No more history' : 'Load older';
+  loadBtn.style.display = archive.items.length===0 ? 'none' : '';
+}
+
+function loadMoreArchive(){
+  if(!archive.exhausted) fetchArchivePage();
+}
+
+function renderArchive(){
+  const body = document.getElementById('archive-body');
+  if(!archive.items.length){
+    body.innerHTML = '<div class="archive-empty">Nothing here yet.</div>';
     return;
   }
-  try{
-    const data=await api(`/editorial/story/${id}/geo-suggest`);
-    const s=data.suggestion||{};
-    if(s.geo_country){
-      drafts[id].geo=s.geo_country;
-      renderDetail();
-      const r=document.getElementById('geo-reasoning-'+id);
-      if(r&&s.reasoning){
-        const conf={high:'🟢',medium:'🟡',low:'🔴'}[s.confidence]||'';
-        r.style.display='block';
-        r.textContent=`${conf} ${s.confidence} — ${s.reasoning}`;
-      }
-      toast('✨ AI suggested: '+s.geo_country);
-    } else { toast('No location determined'); }
-  }catch(e){ toast('Suggestion failed'); }
+  const todayNote = archive.todayOnly
+    ? `Newest first — click "Load older" below to see full history beyond today. `
+    : '';
+  const note = `<div style="font-size:10.5px;color:#555;padding:6px 6px 10px">${todayNote}Click any story to re-open it for editing.</div>`;
+  body.innerHTML = note + archive.items.map(it=>{
+    const date = new Date(it.approved_at || it.created_at);
+    const dateStr = date.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' · ' + date.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const editor = it.edited_by ? `Edited by <b style="color:#aaa">${esc(it.edited_by)}</b>` : 'No editor recorded';
+    const tag = archive.status==='approved'
+      ? (it.is_live ? '<span class="archive-pill">Live now</span>' : '<span class="archive-pill expired">Expired</span>')
+      : (it.editor_notes ? `<span class="archive-pill expired">${esc(it.editor_notes)}</span>` : '');
+    return `<div class="archive-row" style="cursor:pointer" onclick="openArchivedStory('${it.id}')">
+      <div class="archive-headline">${esc(it.headline)}</div>
+      <div class="archive-meta">
+        <span>${esc(it.primary_topic||'')}</span><span>·</span>
+        <span>${editor}</span><span>·</span>
+        <span>${dateStr}</span>
+        ${tag}
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ── Flush feed ─────────────────────────────────────────────────────────────
-async function flushFeed(){
-  const liveCount=parseInt(document.getElementById('s-live').textContent)||0;
-  if(!liveCount){ toast('No live stories to flush'); return; }
-  if(!confirm(`Expire all ${liveCount} live stories now?\n\nThe feed will be empty until new stories are approved. This cannot be undone.`)) return;
-  if(demo){ DEMO_STATS.live=0; renderStats(DEMO_STATS); toast(`🗑 Flushed ${liveCount} stories`); return; }
-  try{
-    const data=await api('/editorial/flush-live',{method:'POST',body:JSON.stringify({editor_id:cfg.editor})});
-    toast(`🗑 Flushed ${data.flushed} stories`);
-    refreshStats();
-  }catch(e){ toast('Flush failed'); }
+// Re-open an already-approved or already-rejected story for editing. Pulls
+// full content (body/topics/sources), injects it into the same working
+// state the normal queue uses, and switches to it — so the exact same
+// editor UI handles fresh review and after-the-fact corrections alike.
+async function openArchivedStory(id){
+  let full;
+  if(demo){
+    full = (DEMO_ARCHIVE.approved.find(x=>x.id===id))
+        || (DEMO_ARCHIVE.rejected.find(x=>x.id===id));
+    if(!full){ toast('Story not found'); return; }
+    full = { ...full, status: DEMO_ARCHIVE.approved.includes(full) ? 'approved' : 'rejected' };
+  } else {
+    try{
+      const data = await api('/editorial/story/'+id);
+      full = data.story;
+      if(!full){ toast('Story not found'); return; }
+    }catch(e){ toast('Could not load story'); return; }
+  }
+
+  stories[id] = full;
+  drafts[id] = buildDraft(full);
+  delete resolved[id]; // make sure it renders as editable, not as a static note
+  if(!order.includes(id)) order.push(id);
+  selectedId = id;
+
+  closeArchive();
+  renderAll();
+  toast('Loaded for editing');
 }
 
 // Boot
-document.getElementById('brand-text').innerHTML='news<span style="color:#e8c547">r</span>';
-document.getElementById('refresh-btn').style.display='flex';
-document.getElementById('flush-btn').style.display='flex';
 loadQueue();
 </script>
 </body>
