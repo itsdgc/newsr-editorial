@@ -583,38 +583,27 @@ function renderDetail(){
     ? `<div class="chip-row">${subs.map(sub=>`<span class="chip" style="background:rgba(196,125,232,0.1);border-color:rgba(196,125,232,0.25);color:#c47de8">${esc(sub)}</span>`).join('')}</div>`
     : `<div style="font-size:11px;color:#444;font-style:italic">None yet — assigned automatically on ingest.</div>`;
 
-  // Action buttons
-  let actionsHtml;
-  if (res) {
-    actionsHtml = `<div class="resolved-note" style="background:${res.status==='approved'?'rgba(77,232,142,0.1);color:#4de88e':'rgba(232,93,93,0.1);color:#e85d5d'}">
-      ${res.status==='approved' ? '✓ Published — now live to readers' : '✕ Rejected — never shown'}
-    </div>`;
-  } else if (s.status==='approved') {
-    actionsHtml = `<div class="detail-actions">
-      <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
-      <button class="dbtn dbtn-reject" onclick="doReject('${id}')">🚫 Unpublish</button>
-    </div>`;
-  } else if (s.status==='rejected') {
-    actionsHtml = `<div class="detail-actions">
-      <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
-      <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
-    </div>`;
-  } else {
-    actionsHtml = `<div class="detail-actions">
-      <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
-      <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
-      <button class="dbtn dbtn-reject" onclick="doReject('${id}')">✕ Reject</button>
-    </div>`;
-  }
+  // Status note for resolved stories (shown at bottom)
+  const resolvedNote = res
+    ? `<div class="resolved-note" style="background:${res.status==='approved'?'rgba(77,232,142,0.1);color:#4de88e':'rgba(232,93,93,0.1);color:#e85d5d'}">
+        ${res.status==='approved' ? '✓ Published — now live to readers' : '✕ Rejected — never shown'}
+       </div>`
+    : '';
 
   const likeRate = s.impressions ? Math.round((s.like_rate||0)*100)+'%' : '—';
 
   el.innerHTML = `
     <div class="detail-top">
       <div class="detail-status ${statusLabel}">${statusText}</div>
-      <button class="top-toggle-btn ${s.is_top ? 'is-top' : ''}" onclick="toggleTop('${id}')"
-        title="${s.is_top ? 'Remove Top Story designation' : 'Designate as Top Story'}"
-      >${s.is_top ? '🔴 TOP STORY' : '⭐ Mark as Top Story'}</button>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        ${!res && s.status !== 'approved' ? `<button class="dbtn dbtn-approve" style="padding:6px 12px;font-size:11px" onclick="doApprove('${id}')">✓ Approve</button>` : ''}
+        ${!res && s.status !== 'rejected' ? `<button class="dbtn dbtn-reject" style="padding:6px 12px;font-size:11px" onclick="doReject('${id}')">✕ Reject</button>` : ''}
+        ${!res ? `<button class="dbtn dbtn-save" style="padding:6px 12px;font-size:11px" onclick="doSaveOnly('${id}')">💾 Save</button>` : ''}
+        <button class="top-toggle-btn ${s.is_top ? 'is-top' : ''}" onclick="toggleTop('${id}')"
+          title="${s.is_top ? 'Remove Top Story designation' : 'Designate as Top Story'}"
+          style="padding:5px 10px;font-size:11px"
+        >${s.is_top ? '🔴 TOP' : '⭐ Top'}</button>
+      </div>
     </div>
 
     <!-- Source + Geo at top -->
@@ -680,7 +669,7 @@ function renderDetail(){
       <label>AI subtopics</label>
       ${subtopicsHtml}
     </div>
-    ${actionsHtml}
+    ${resolvedNote}
   `;
 }
 
