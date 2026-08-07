@@ -122,6 +122,32 @@
   .detail-status.approved{background:rgba(77,232,142,0.15);color:#4de88e}
   .detail-status.rejected{background:rgba(232,93,93,0.15);color:#e85d5d}
 
+
+  /* Story meta header strip — sources + geo at top */
+  .meta-strip{background:#0d0d14;border:0.5px solid #1e1e2a;border-radius:10px;padding:12px 14px;margin-bottom:16px}
+  .meta-strip-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .meta-strip-row:last-child{margin-bottom:0}
+  .meta-label{font-size:9px;font-weight:700;letter-spacing:1.2px;color:#444;text-transform:uppercase;min-width:52px;padding-top:2px}
+  .source-link{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(255,255,255,0.04);border:0.5px solid #2a2a35;border-radius:6px;color:#a0a0b0;font-size:12px;font-weight:600;text-decoration:none;transition:border-color 0.15s}
+  .source-link:hover{border-color:#e8c547;color:#e8c547}
+  /* Analytics bar */
+  .analytics-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px}
+  .stat-cell{background:#0d0d14;border:0.5px solid #1e1e2a;border-radius:8px;padding:8px;text-align:center}
+  .stat-cell .sv{font-size:18px;font-weight:900;color:#f0f0f0;line-height:1}
+  .stat-cell .sl{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:0.8px;margin-top:3px}
+  .stat-cell.s-like .sv{color:#4de88e}
+  .stat-cell.s-pass .sv{color:#e85d5d}
+  .stat-cell.s-save .sv{color:#e8c547}
+  .stat-cell.s-share .sv{color:#4d8ef5}
+  /* Cluster groups in pending list */
+  .cluster-group{margin-bottom:8px;border:0.5px solid #2a2a35;border-radius:10px;overflow:hidden}
+  .cluster-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#111118;cursor:pointer;user-select:none}
+  .cluster-badge{background:rgba(232,197,71,0.12);border:0.5px solid rgba(232,197,71,0.3);color:#e8c547;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+  .cluster-items{border-top:0.5px solid #1e1e2a}
+  .cluster-item{padding:0;border-bottom:0.5px solid #111}
+  .story-row.indented{padding-left:28px;border-left:2px solid #1e1e2a}
+  .cluster-item:last-child{border-bottom:none}
+
   .dfield{margin-bottom:16px}
   .dfield label{display:block;font-size:10px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px}
   .dfield input,.dfield textarea,.dfield select{width:100%;background:#0a0a0f;border:0.5px solid #2a2a35;border-radius:9px;padding:10px 12px;color:#e8e8e8;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.6}
@@ -426,45 +452,89 @@ function renderAll(){ renderList(); renderDetail(); }
 
 function renderList(){
   const el=document.getElementById('story-list');
-  document.getElementById('list-count').textContent = order.length - Object.keys(resolved).length;
+  const unresolvedCount = order.filter(id => !resolved[id]).length;
+  document.getElementById('list-count').textContent = unresolvedCount;
 
   if(!order.length){
     el.innerHTML='<div class="list-empty">✅ Queue is clear</div>';
     return;
   }
 
-  el.innerHTML = order.map(id=>{
-    const s = stories[id];
+  // Separate pending from non-pending
+  const pendingIds   = order.filter(id => !resolved[id] && stories[id]?.status === 'pending_review');
+  const otherIds     = order.filter(id => resolved[id] || stories[id]?.status !== 'pending_review');
+
+  // Group pending stories by cluster_key for duplicate detection
+  const clusterMap = {};    // cluster_key -> [id, ...]
+  const standalone  = [];   // ids with no cluster_key
+
+  pendingIds.forEach(id => {
+    const ck = stories[id]?.cluster_key;
+    if (ck) {
+      if (!clusterMap[ck]) clusterMap[ck] = [];
+      clusterMap[ck].push(id);
+    } else {
+      standalone.push(id);
+    }
+  });
+
+  // Build cluster groups (2+ stories with same key) and singletons
+  const clusterGroups = Object.entries(clusterMap).filter(([,ids]) => ids.length > 1);
+  const clusterSingle = Object.entries(clusterMap).filter(([,ids]) => ids.length === 1).map(([,ids]) => ids[0]);
+  const allStandalone = [...standalone, ...clusterSingle];
+
+  function storyRow(id, indented=false){
+    const s     = stories[id];
     const draft = drafts[id];
-    const res = resolved[id];
+    const res   = resolved[id];
     const dotClass = res ? res.status
       : s.status==='approved' ? 'approved'
-      : s.status==='rejected' ? 'rejected'
-      : s.status==='editing' ? 'editing' : 'pending';
-    const rowClass = ['story-row', id===selectedId?'selected':'', res?'resolved':''].join(' ').trim();
-    // Items opened from the archive (already approved/rejected, not just
-    // resolved this session) get a small 🗄 label so it's clear at a glance
-    // this isn't a fresh pending item.
+      : s.status==='rejected' ? 'rejected' : 'pending';
+    const rowClass = ['story-row', id===selectedId?'selected':'', res?'resolved':'', indented?'indented':''].join(' ').trim();
     let metaContent;
     if (res) {
       metaContent = `<span class="row-resolved-tag ${res.status}">${res.status==='approved'?'✓ Published':'✕ Rejected'}</span>`;
     } else if (s.status==='approved') {
-      metaContent = `<span class="row-resolved-tag approved">🗄 Live story</span>`;
+      metaContent = `<span class="row-resolved-tag approved">🗄 Live</span>`;
     } else if (s.status==='rejected') {
-      metaContent = `<span class="row-resolved-tag rejected">🗄 Rejected story</span>`;
+      metaContent = `<span class="row-resolved-tag rejected">🗄 Rejected</span>`;
     } else {
-      metaContent = `<span>${draft.primary}</span>`;
+      const src = (s.sources||[])[0];
+      metaContent = `<span style="color:#555;font-size:10px">${src ? (src.name||'') : draft.primary}</span>`;
     }
     const topBadge = s.is_top ? `<span class="top-badge">🔴 TOP</span>` : '';
-    return `
-      <div class="${rowClass}" id="row-${id}" onclick="selectStory('${id}')">
-        <div class="row-top">
-          <div class="row-dot ${dotClass}"></div>
-          <div class="row-headline">${esc(draft.headline)}</div>
-        </div>
-        <div class="row-meta">${topBadge}${metaContent}</div>
-      </div>`;
+    return `<div class="${rowClass}" id="row-${id}" onclick="selectStory('${id}')">
+      <div class="row-top">
+        <div class="row-dot ${dotClass}"></div>
+        <div class="row-headline">${esc(draft.headline)}</div>
+      </div>
+      <div class="row-meta">${topBadge}${metaContent}</div>
+    </div>`;
+  }
+
+  // Render cluster groups
+  const clusterHtml = clusterGroups.map(([ck, ids]) => {
+    const primaryTopic = stories[ids[0]]?.primary_topic || 'Stories';
+    const expanded = ids.some(id => id === selectedId);
+    return `<div class="cluster-group">
+      <div class="cluster-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <span class="cluster-badge">📰 ${ids.length} related</span>
+        <span style="font-size:12px;color:#888;flex:1">${esc(stories[ids[0]]?.headline?.slice(0,60) || primaryTopic)}…</span>
+        <span style="color:#444;font-size:11px">▾</span>
+      </div>
+      <div class="cluster-items" style="display:${expanded?'block':'block'}">
+        ${ids.map(id => storyRow(id, true)).join('')}
+      </div>
+    </div>`;
   }).join('');
+
+  // Render standalone stories
+  const standaloneHtml = allStandalone.map(id => storyRow(id)).join('');
+
+  // Render other (resolved/non-pending) stories
+  const otherHtml = otherIds.map(id => storyRow(id)).join('');
+
+  el.innerHTML = clusterHtml + standaloneHtml + otherHtml;
 }
 
 function renderDetail(){
@@ -477,8 +547,6 @@ function renderDetail(){
   const s = stories[id];
   const draft = drafts[id];
   const res = resolved[id];
-  // statusLabel reflects the TRUE backend status, including already-resolved
-  // items reopened from the archive (not just things resolved this session).
   const statusLabel = res ? res.status
     : s.status==='approved' ? 'approved'
     : s.status==='rejected' ? 'rejected'
@@ -489,115 +557,130 @@ function renderDetail(){
     : s.status==='rejected' ? 'Rejected — editing'
     : s.status==='editing' ? 'Editing' : 'Pending review';
   const sources = s.sources || [];
-  const locked = !!res; // only truly locked once resolved THIS session
+  const locked = !!res;
 
   const primaryOptGroups = TOPICS.map(t=>
     `<option value="${t}" ${t===draft.primary?'selected':''}>${t}</option>`
   ).join('');
-
   const availableForSecondary = TOPICS
     .filter(t=>t!==draft.primary && !draft.secondary.includes(t))
     .map(t=>`<option value="${t}">${t}</option>`).join('');
 
+  // Source links HTML
+  const sourceLinksHtml = sources.length
+    ? sources.map(src => {
+        const name = esc(src.name || src);
+        const url  = src.url || src.source_url || '';
+        return url
+          ? `<a href="${url}" target="_blank" rel="noopener" class="source-link">📎 ${name} ↗</a>`
+          : `<span class="source-link" style="cursor:default">📎 ${name}</span>`;
+      }).join('')
+    : '<span style="color:#444;font-size:12px">No sources attached</span>';
+
+  // Subtopics HTML
+  const subs = s.subtopics || [];
+  const subtopicsHtml = subs.length
+    ? `<div class="chip-row">${subs.map(sub=>`<span class="chip" style="background:rgba(196,125,232,0.1);border-color:rgba(196,125,232,0.25);color:#c47de8">${esc(sub)}</span>`).join('')}</div>`
+    : `<div style="font-size:11px;color:#444;font-style:italic">None yet — assigned automatically on ingest.</div>`;
+
+  // Action buttons
+  let actionsHtml;
+  if (res) {
+    actionsHtml = `<div class="resolved-note" style="background:${res.status==='approved'?'rgba(77,232,142,0.1);color:#4de88e':'rgba(232,93,93,0.1);color:#e85d5d'}">
+      ${res.status==='approved' ? '✓ Published — now live to readers' : '✕ Rejected — never shown'}
+    </div>`;
+  } else if (s.status==='approved') {
+    actionsHtml = `<div class="detail-actions">
+      <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
+      <button class="dbtn dbtn-reject" onclick="doReject('${id}')">🚫 Unpublish</button>
+    </div>`;
+  } else if (s.status==='rejected') {
+    actionsHtml = `<div class="detail-actions">
+      <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
+      <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
+    </div>`;
+  } else {
+    actionsHtml = `<div class="detail-actions">
+      <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
+      <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
+      <button class="dbtn dbtn-reject" onclick="doReject('${id}')">✕ Reject</button>
+    </div>`;
+  }
+
+  const likeRate = s.impressions ? Math.round((s.like_rate||0)*100)+'%' : '—';
+
   el.innerHTML = `
     <div class="detail-top">
       <div class="detail-status ${statusLabel}">${statusText}</div>
-      <button
-        class="top-toggle-btn ${s.is_top ? 'is-top' : ''}"
-        onclick="toggleTop('${id}')"
+      <button class="top-toggle-btn ${s.is_top ? 'is-top' : ''}" onclick="toggleTop('${id}')"
         title="${s.is_top ? 'Remove Top Story designation' : 'Designate as Top Story'}"
       >${s.is_top ? '🔴 TOP STORY' : '⭐ Mark as Top Story'}</button>
     </div>
 
+    <!-- Source + Geo at top -->
+    <div class="meta-strip">
+      <div class="meta-strip-row">
+        <span class="meta-label">Source${sources.length!==1?'s':''}</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;flex:1">${sourceLinksHtml}</div>
+      </div>
+      <div class="meta-strip-row">
+        <span class="meta-label">Location</span>
+        <div style="display:flex;gap:8px;align-items:center;flex:1">
+          <input id="f-geo" value="${esc(draft.geo||'')}" ${locked?'disabled':''}
+            placeholder="US, CA, GB, GLOBAL…" maxlength="6"
+            style="text-transform:uppercase;font-family:monospace;letter-spacing:1px;width:110px;background:#0a0a0f;border:0.5px solid #2a2a35;border-radius:6px;padding:5px 9px;color:#f0f0f0;font-size:13px"
+            oninput="drafts['${id}'].geo=this.value.toUpperCase()"/>
+          ${!locked ? `<button id="geo-suggest-btn-${id}" class="btn btn-ghost" style="font-size:11px;padding:5px 10px" onclick="suggestGeo('${id}')">✨ AI suggest</button>` : ''}
+          <span id="geo-reasoning-${id}" style="display:none;font-size:10px;color:#c47de8"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics bar -->
+    <div class="analytics-bar">
+      <div class="stat-cell"><div class="sv">${s.impressions||0}</div><div class="sl">Views</div></div>
+      <div class="stat-cell s-like"><div class="sv">${s.likes||0}</div><div class="sl">👍 Likes</div></div>
+      <div class="stat-cell s-pass"><div class="sv">${s.passes||0}</div><div class="sl">👎 Passes</div></div>
+      <div class="stat-cell s-save"><div class="sv">${s.saves||0}</div><div class="sl">🔖 Saves</div></div>
+      <div class="stat-cell s-share"><div class="sv">${s.shares||0}</div><div class="sl">📤 Shares</div></div>
+      <div class="stat-cell"><div class="sv">${likeRate}</div><div class="sl">Like rate</div></div>
+    </div>
+
+    <!-- Editing fields -->
     <div class="dfield dfield-headline">
       <label>Headline</label>
       <input id="f-headline" value="${esc(draft.headline)}" ${locked?'disabled':''} oninput="drafts['${id}'].headline=this.value"/>
     </div>
-
     <div class="dfield">
       <label>Body</label>
       <textarea id="f-body" ${locked?'disabled':''} oninput="drafts['${id}'].body=this.value">${esc(draft.body)}</textarea>
     </div>
-
     <div class="dfield">
-      <label>Primary topic — the one shown on the card</label>
+      <label>Primary topic</label>
       <select id="f-primary" ${locked?'disabled':''} onchange="changePrimary('${id}', this.value)">${primaryOptGroups}</select>
     </div>
-
     <div class="dfield">
-      <label>Extra topics — hidden metadata that refines each user's recommendations</label>
+      <label>Extra topics — hidden metadata</label>
       <div class="topic-row">
-        ${draft.secondary.map(t=>`
-          <span class="topic-chip">${t}${locked?'':`<button onclick="removeSecondary('${id}','${t}')">×</button>`}</span>
-        `).join('')}
-        ${!locked ? `
-          <select class="add-topic-select" onchange="addSecondary('${id}', this.value); this.value='';">
-            <option value="">+ Add topic…</option>
-            ${availableForSecondary}
-          </select>` : ''}
+        ${draft.secondary.map(t=>`<span class="topic-chip">${t}${locked?'':`<button onclick="removeSecondary('${id}','${t}')">×</button>`}</span>`).join('')}
+        ${!locked ? `<select class="add-topic-select" onchange="addSecondary('${id}', this.value); this.value='';">
+          <option value="">+ Add topic…</option>${availableForSecondary}
+        </select>` : ''}
       </div>
-      ${!locked ? `
-        <div class="custom-topic-row">
-          <input id="f-customtopic-${id}" placeholder="Or type a custom tag (e.g. Federal Reserve, Taylor Swift)…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSecondary('${id}');}"/>
-          <button onclick="addCustomSecondary('${id}')">+ Add</button>
-        </div>` : ''}
-      <div class="dhint">These never appear on the card. They help match this story to users who've shown interest in those topics, even when this isn't their primary display category. Custom tags work too — they just won't show up on the radar chart, which only tracks the 7 main categories.</div>
+      ${!locked ? `<div class="custom-topic-row">
+        <input id="f-customtopic-${id}" placeholder="Or type a custom tag…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSecondary('${id}');}"/>
+        <button onclick="addCustomSecondary('${id}')">+ Add</button>
+      </div>` : ''}
     </div>
-
     <div class="dfield">
       <label>Editor notes</label>
-      <input id="f-notes" value="${esc(draft.notes||'')}" ${locked?'disabled':''} placeholder="e.g. rejection reason, or a note for other editors" oninput="drafts['${id}'].notes=this.value"/>
+      <input id="f-notes" value="${esc(draft.notes||'')}" ${locked?'disabled':''} placeholder="Rejection reason or editorial note…" oninput="drafts['${id}'].notes=this.value"/>
     </div>
-
     <div class="dfield">
-      <label>AI subtopics — internal taxonomy, never shown to users</label>
-      ${(() => {
-        const subs = s.subtopics || [];
-        if(!subs.length) return `<div style="font-size:11px;color:#444;font-style:italic">No subtopics yet — assigned automatically when stories are ingested via the API.</div>`;
-        return `<div class="chip-row">${subs.map(sub=>`<span class="chip" style="background:rgba(196,125,232,0.1);border-color:rgba(196,125,232,0.25);color:#c47de8">${esc(sub)}</span>`).join('')}</div>`;
-      })()}
+      <label>AI subtopics</label>
+      ${subtopicsHtml}
     </div>
-
-    <div class="dfield">
-      <label>Geographic origin — ISO country code <span style="color:#555;font-weight:400">(hidden from users · used for location-based ranking)</span></label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="f-geo" value="${esc(draft.geo||'')}" ${locked?'disabled':''}
-          placeholder="US, CA, GB, GLOBAL…"
-          maxlength="6"
-          style="text-transform:uppercase;font-family:monospace;letter-spacing:1px;flex:1"
-          oninput="drafts['${id}'].geo=this.value.toUpperCase()"/>
-        ${!locked ? `<button id="geo-suggest-btn-${id}" class="btn btn-ghost" style="white-space:nowrap;font-size:11px;padding:8px 12px" onclick="suggestGeo('${id}')">✨ AI suggest</button>` : ''}
-      </div>
-      <div id="geo-reasoning-${id}" style="display:none;margin-top:7px;padding:8px 10px;background:rgba(196,125,232,0.08);border:0.5px solid rgba(196,125,232,0.2);border-radius:8px;font-size:10.5px;color:#c47de8;line-height:1.5"></div>
-      <div class="dhint">Set automatically by AI during synthesis. Override if incorrect. Two-letter ISO code (US, CA, GB…) or GLOBAL for worldwide stories. Never displayed in the app.</div>
-    </div>
-
-    <div class="dfield">
-      <label>Sources</label>
-      <div class="sources-list">
-        ${sources.length ? sources.map(src=>`<div class="source-row">📎 ${esc(src.name||src)}</div>`).join('') : '<div class="source-row">No sources attached</div>'}
-      </div>
-    </div>
-
-    ${res
-      ? `<div class="resolved-note" style="background:${res.status==='approved'?'rgba(77,232,142,0.1);color:#4de88e':'rgba(232,93,93,0.1);color:#e85d5d'}">
-           ${res.status==='approved' ? '✓ Published — now live to readers' : '✕ Rejected — never shown'}
-         </div>`
-      : s.status==='approved'
-      ? `<div class="detail-actions">
-           <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
-           <button class="dbtn dbtn-reject" onclick="doReject('${id}')">🚫 Unpublish</button>
-         </div>`
-      : s.status==='rejected'
-      ? `<div class="detail-actions">
-           <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
-           <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
-         </div>`
-      : `<div class="detail-actions">
-           <button class="dbtn dbtn-approve" onclick="doApprove('${id}')">✓ Approve & publish</button>
-           <button class="dbtn dbtn-save" onclick="doSaveOnly('${id}')">💾 Save changes</button>
-           <button class="dbtn dbtn-reject" onclick="doReject('${id}')">✕ Reject</button>
-         </div>`}
+    ${actionsHtml}
   `;
 }
 
