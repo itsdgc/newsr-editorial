@@ -201,6 +201,7 @@
     <button class="iconbtn" onclick="loadQueue()">↻ Refresh</button>
     <button class="iconbtn iconbtn-approve" id="approve-all-btn" onclick="approveAll()">✓ Approve all</button>
     <button class="iconbtn iconbtn-flush" onclick="flushFeed()">🗑 Flush feed</button>
+    <button class="iconbtn" onclick="triggerReplenish()" id="replenish-btn">⚡ Fetch stories</button>
     <button class="iconbtn iconbtn-sources" onclick="toggleSources()">📋 Sources</button>
   </div>
 
@@ -1106,6 +1107,21 @@ async function bulkToggle(enabled) {
     toast(`${enabled ? 'Enabled' : 'Disabled'} ${targets.length} sources`);
   } catch(e) {
     toast('Some updates failed');
+  }
+}
+
+
+async function triggerReplenish() {
+  const btn = document.getElementById('replenish-btn');
+  btn.disabled = true; btn.textContent = '⏳ Fetching…';
+  if (demo) { toast('Replenish not available in demo mode'); btn.disabled=false; btn.textContent='⚡ Fetch stories'; return; }
+  try {
+    const data = await api('/editorial/replenish', { method: 'POST', body: JSON.stringify({ editor_id: cfg.editor }) });
+    toast('✓ Fetch cycle started — check Render logs · refresh queue in ~2 min');
+    setTimeout(() => { btn.disabled=false; btn.textContent='⚡ Fetch stories'; loadQueue(); }, 90000);
+  } catch(e) {
+    toast('Replenish failed — check Render logs');
+    btn.disabled=false; btn.textContent='⚡ Fetch stories';
   }
 }
 
