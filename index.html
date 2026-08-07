@@ -43,6 +43,30 @@
   .iconbtn-approve:disabled{opacity:0.35;cursor:default;pointer-events:none}
   .iconbtn-flush{color:#e87d4d;border-color:rgba(232,125,77,0.3);background:rgba(232,125,77,0.07)}
   .iconbtn-flush:hover{border-color:#e87d4d;background:rgba(232,125,77,0.12)}
+  .iconbtn-sources{color:#c47de8;border-color:rgba(196,125,232,0.3);background:rgba(196,125,232,0.07)}
+  .iconbtn-sources:hover{border-color:#c47de8;background:rgba(196,125,232,0.12)}
+  .iconbtn-sources.active{color:#c47de8;border-color:#c47de8;background:rgba(196,125,232,0.15)}
+  /* Sources panel */
+  #sources-panel{display:none;margin-bottom:14px;background:#141418;border:0.5px solid #2a2a35;border-radius:12px;overflow:hidden}
+  #sources-panel.open{display:block}
+  .src-panel-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid #1e1e2a;gap:10px}
+  .src-search{background:#0d0d14;border:0.5px solid #2a2a35;border-radius:7px;padding:7px 11px;color:#f0f0f0;font-size:12px;flex:1;outline:none}
+  .src-search:focus{border-color:#c47de8}
+  .src-bulk{display:flex;gap:6px}
+  .src-table{width:100%;max-height:380px;overflow-y:auto}
+  .src-row{display:grid;grid-template-columns:44px 1fr 80px 110px;align-items:center;padding:10px 16px;border-bottom:0.5px solid #111;gap:8px}
+  .src-row:last-child{border-bottom:none}
+  .src-row:hover{background:rgba(255,255,255,0.02)}
+  .src-name{font-size:13px;color:#f0f0f0;font-weight:600}
+  .src-count{font-size:11px;color:#555;text-align:right}
+  .src-date{font-size:10px;color:#444;text-align:right}
+  .src-toggle{width:36px;height:20px;border-radius:10px;border:none;cursor:pointer;transition:background 0.2s;flex-shrink:0;position:relative}
+  .src-toggle.on{background:#4de88e}
+  .src-toggle.off{background:#2a2a35}
+  .src-toggle::after{content:'';position:absolute;width:14px;height:14px;border-radius:7px;background:#fff;top:3px;transition:left 0.2s}
+  .src-toggle.on::after{left:19px}
+  .src-toggle.off::after{left:3px}
+  .src-empty{padding:32px;text-align:center;color:#444;font-size:13px}
 
   /* Stats */
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
@@ -177,6 +201,7 @@
     <button class="iconbtn" onclick="loadQueue()">↻ Refresh</button>
     <button class="iconbtn iconbtn-approve" id="approve-all-btn" onclick="approveAll()">✓ Approve all</button>
     <button class="iconbtn iconbtn-flush" onclick="flushFeed()">🗑 Flush feed</button>
+    <button class="iconbtn iconbtn-sources" onclick="toggleSources()">📋 Sources</button>
   </div>
 
   <div class="settings" id="settings">
@@ -948,6 +973,122 @@ async function openArchivedStory(id){
   closeArchive();
   renderAll();
   toast('Loaded for editing');
+}
+
+
+// ── Sources management ──────────────────────────────────────────────────────
+let allSources = [];
+let sourcesOpen = false;
+
+async function toggleSources() {
+  sourcesOpen = !sourcesOpen;
+  const panel = document.getElementById('sources-panel');
+  const btn   = document.querySelector('.iconbtn-sources');
+  panel.classList.toggle('open', sourcesOpen);
+  btn.classList.toggle('active', sourcesOpen);
+  if (sourcesOpen && allSources.length === 0) await loadSources();
+}
+
+async function loadSources() {
+  const table = document.getElementById('src-table');
+  table.innerHTML = '<div class="src-empty">Loading…</div>';
+  if (demo) {
+    allSources = [
+      {source_name:'Reuters',story_count:42,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'BBC',story_count:31,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'AP News',story_count:28,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'Bloomberg',story_count:19,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'The Guardian',story_count:17,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'CBC',story_count:14,last_seen:new Date().toISOString(),enabled:false},
+      {source_name:'CNBC',story_count:11,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'Globe and Mail',story_count:9,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'TechCrunch',story_count:7,last_seen:new Date().toISOString(),enabled:true},
+      {source_name:'Wired',story_count:5,last_seen:new Date().toISOString(),enabled:true},
+    ];
+    renderSources(allSources);
+    return;
+  }
+  try {
+    const data = await api('/editorial/sources');
+    allSources = data.sources || [];
+    renderSources(allSources);
+  } catch(e) {
+    table.innerHTML = '<div class="src-empty">Failed to load sources</div>';
+  }
+}
+
+function renderSources(sources) {
+  const table = document.getElementById('src-table');
+  if (!sources.length) {
+    table.innerHTML = '<div class="src-empty">No sources found yet — stories need to be ingested first.</div>';
+    return;
+  }
+  table.innerHTML = sources.map(s => {
+    const date = s.last_seen ? new Date(s.last_seen).toLocaleDateString('en-CA',{month:'short',day:'numeric'}) : '—';
+    const on   = s.enabled !== false;
+    return `<div class="src-row" id="srcrow-${esc(s.source_name)}">
+      <button class="src-toggle ${on?'on':'off'}" onclick="toggleSource('${esc(s.source_name)}',${!on})" title="${on?'Disable':'Enable'} ${esc(s.source_name)}"></button>
+      <span class="src-name" style="opacity:${on?1:0.4}">${esc(s.source_name)}</span>
+      <span class="src-count" style="opacity:${on?1:0.4}">${s.story_count} stories</span>
+      <span class="src-date" style="opacity:${on?1:0.4}">Last: ${date}</span>
+    </div>`;
+  }).join('');
+}
+
+function filterSources(q) {
+  const filtered = allSources.filter(s =>
+    s.source_name.toLowerCase().includes(q.toLowerCase())
+  );
+  renderSources(filtered);
+}
+
+async function toggleSource(name, enabled) {
+  // Optimistic UI update
+  const src = allSources.find(s => s.source_name === name);
+  if (src) src.enabled = enabled;
+  const row = document.getElementById('srcrow-' + name);
+  if (row) {
+    const btn = row.querySelector('.src-toggle');
+    const nameEl = row.querySelector('.src-name');
+    const countEl = row.querySelector('.src-count');
+    const dateEl = row.querySelector('.src-date');
+    btn.className = 'src-toggle ' + (enabled ? 'on' : 'off');
+    [nameEl, countEl, dateEl].forEach(el => { if(el) el.style.opacity = enabled ? 1 : 0.4; });
+  }
+  if (demo) { toast(`${enabled ? '✓ Enabled' : '✗ Disabled'} ${name}`); return; }
+  try {
+    await api('/editorial/sources/toggle', {
+      method: 'POST',
+      body: JSON.stringify({ source_name: name, enabled })
+    });
+    toast(`${enabled ? '✓ Enabled' : '✗ Disabled'} ${name}`);
+  } catch(e) {
+    // Revert on failure
+    if (src) src.enabled = !enabled;
+    renderSources(allSources);
+    toast('Failed to update source');
+  }
+}
+
+async function bulkToggle(enabled) {
+  const q = document.getElementById('src-search').value;
+  const targets = allSources.filter(s =>
+    !q || s.source_name.toLowerCase().includes(q.toLowerCase())
+  );
+  targets.forEach(s => { s.enabled = enabled; });
+  renderSources(targets.length < allSources.length ? targets : allSources);
+  if (demo) { toast(`${enabled ? 'Enabled' : 'Disabled'} ${targets.length} sources`); return; }
+  try {
+    await Promise.all(targets.map(s =>
+      api('/editorial/sources/toggle', {
+        method: 'POST',
+        body: JSON.stringify({ source_name: s.source_name, enabled })
+      })
+    ));
+    toast(`${enabled ? 'Enabled' : 'Disabled'} ${targets.length} sources`);
+  } catch(e) {
+    toast('Some updates failed');
+  }
 }
 
 // Boot
