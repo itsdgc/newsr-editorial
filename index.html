@@ -208,7 +208,7 @@
     <h3>Connection</h3>
     <div class="field">
       <label>Backend URL</label>
-      <input id="cfg-url" placeholder="https://newsr-ai.onrender.com" />
+      <input id="cfg-url" value="https://newsr-ai.onrender.com" />
       <div class="hint">Your Render service URL. Leave blank to stay in demo mode.</div>
     </div>
     <div class="field">
@@ -272,7 +272,7 @@ const TOPIC_CAT={};
 TOPICS.forEach(t=>TOPIC_CAT[t]=t);
 
 // ── Config ─────────────────────────────────────────────────────────────
-let cfg = { url:'', editor:'david', token:'' };
+let cfg = { url:'https://newsr-ai.onrender.com', editor:'david', token:'' };
 let demo = true;
 
 // ── Demo data ──────────────────────────────────────────────────────────
@@ -849,7 +849,7 @@ function saveSettings(){
   cfg.url=document.getElementById('cfg-url').value.trim();
   cfg.editor=document.getElementById('cfg-editor').value.trim()||'editor';
   cfg.token=document.getElementById('cfg-token').value.trim();
-  demo=!cfg.url;
+  demo=!cfg.url; // url always set — demo=false by default
   document.getElementById('demo-banner').style.display=demo?'block':'none';
   if(demo){ setConn('demo','Demo mode'); }
   toggleSettings();
