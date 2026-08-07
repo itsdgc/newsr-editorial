@@ -1075,7 +1075,11 @@ async function toggleSource(name, enabled) {
       method: 'POST',
       body: JSON.stringify({ source_name: name, enabled })
     });
-    toast(`${enabled ? '✓ Enabled' : '✗ Disabled'} ${name}`);
+    const msg = !enabled && data.rejected > 0
+      ? `✗ Disabled ${name} — ${data.rejected} pending stories auto-rejected`
+      : `${enabled ? '✓ Enabled' : '✗ Disabled'} ${name}`;
+    toast(msg);
+    if (!enabled && data.rejected > 0) refreshStatsLive();
   } catch(e) {
     // Revert on failure
     if (src) src.enabled = !enabled;
