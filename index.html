@@ -229,7 +229,7 @@
 
   <div class="stats" id="stats">
     <div class="stat"><div class="v" style="color:#e8a84d" id="s-pending">0</div><div class="l">Pending</div></div>
-    <div class="stat stat-click" onclick="openArchive('approved','Live stories')"><div class="v" style="color:#4de88e" id="s-live">0</div><div class="l">Live <span class="stat-hint">↗</span></div></div>
+    <div class="stat stat-click" onclick="openArchive('live','Live stories')"><div class="v" style="color:#4de88e" id="s-live">0</div><div class="l">Live <span class="stat-hint">↗</span></div></div>
     <div class="stat stat-click" onclick="openArchive('rejected','Rejected stories')"><div class="v" style="color:#e85d5d" id="s-rejected">0</div><div class="l">Rejected <span class="stat-hint">↗</span></div></div>
     <div class="stat stat-click" onclick="openArchive('approved','Approved today',true)"><div class="v" style="color:#4d8ef5" id="s-today">0</div><div class="l">Approved today <span class="stat-hint">↗</span></div></div>
   </div>
@@ -892,6 +892,8 @@ async function fetchArchivePage(){
     try{
       const params = new URLSearchParams({ status: archive.status, limit: 50 });
       if(archive.cursor) params.set('before', archive.cursor);
+      if(archive.todayOnly) params.set('todayOnly', 'true');
+      if(archive.liveOnly)  params.set('liveOnly',  'true');
       const data = await api('/editorial/archive?'+params.toString());
       items = data.items || [];
       if(items.length < 50) archive.exhausted = true;
